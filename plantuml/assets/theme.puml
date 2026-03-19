@@ -1,0 +1,95 @@
+' ============================================
+' Shared Architecture Diagram Theme
+' Include via: !include theme.puml
+' ============================================
+
+' --- Base ---
+skinparam backgroundColor #FEFEFE
+skinparam shadowing false
+skinparam defaultFontName "Segoe UI, Helvetica, Arial, sans-serif"
+skinparam defaultFontSize 13
+skinparam roundCorner 8
+skinparam wrapWidth 200
+
+' --- Arrows ---
+skinparam arrow {
+  Color #555555
+  FontColor #333333
+  FontSize 12
+}
+
+' --- Notes ---
+skinparam note {
+  BackgroundColor #FFFDE7
+  BorderColor #FBC02D
+  FontColor #5D4037
+  FontSize 11
+}
+
+' --- Title ---
+skinparam title {
+  FontSize 18
+  FontColor #1a1a1a
+}
+
+' --- Footer ---
+skinparam footer {
+  FontSize 10
+  FontColor #9E9E9E
+}
+
+' ============================================
+' Color Palette by Architectural Layer
+' ============================================
+
+' --- API / Input layer (blue) ---
+skinparam participant {
+  BackgroundColor #DBEAFE
+  BorderColor #3B82F6
+  FontColor #1E3A5F
+}
+
+' --- Service / Logic layer (purple) ---
+skinparam component {
+  BackgroundColor #EDE9FE
+  BorderColor #7C3AED
+  FontColor #3B1F6E
+}
+
+' --- Database / Storage layer (green) ---
+skinparam entity {
+  BackgroundColor #D1FAE5
+  BorderColor #22C55E
+  FontColor #14532D
+}
+
+' --- External services (amber) ---
+skinparam agent {
+  BackgroundColor #FEF3C7
+  BorderColor #F59E0B
+  FontColor #78350F
+}
+
+' ============================================
+' Rectangle stereotypes for grouping
+' ============================================
+skinparam rectangle<<api>> {
+  BackgroundColor #DBEAFE
+  BorderColor #3B82F6
+  FontColor #1E3A5F
+}
+skinparam rectangle<<service>> {
+  BackgroundColor #EDE9FE
+  BorderColor #7C3AED
+  FontColor #3B1F6E
+}
+skinparam rectangle<<storage>> {
+  BackgroundColor #D1FAE5
+  BorderColor #22C55E
+  FontColor #14532D
+}
+skinparam rectangle<<external>> {
+  BackgroundColor #FEF3C7
+  BorderColor #F59E0B
+  FontColor #78350F
+}
