@@ -1,0 +1,368 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Artifact kit — gallery</title>
+<link rel="stylesheet" href="tokens.css">
+<style>
+/* ---- gallery chrome ---- */
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { padding: var(--sp-5); }
+.g-wrap { max-width: 880px; margin: 0 auto; }
+.g-toolbar {
+  display: flex; justify-content: space-between; align-items: center;
+  gap: var(--sp-3); margin-bottom: var(--sp-6);
+}
+.g-toolbar h1 { font-size: var(--fs-xl); font-weight: 650; }
+.g-toolbar p { font-size: var(--fs-sm); color: var(--text-3); }
+.g-section { margin-bottom: var(--sp-7); }
+.g-section > h2 {
+  font-size: var(--fs-xs); font-weight: 600; text-transform: uppercase;
+  letter-spacing: 0.08em; color: var(--text-3);
+  margin-bottom: var(--sp-3); padding-bottom: var(--sp-2);
+  border-bottom: 1px solid var(--border);
+}
+.g-note { font-size: var(--fs-xs); color: var(--text-3); margin-top: var(--sp-2); }
+.g-row { display: flex; flex-wrap: wrap; gap: var(--sp-2); align-items: center; }
+
+/* ================================================================
+   Component CSS below is copied from components/*.md — those files
+   are the source of truth. If a component changes, update both.
+   ================================================================ */
+
+/* ---- stat-tile ---- */
+.k-stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: var(--sp-3); }
+.k-stat { display: flex; flex-direction: column; gap: var(--sp-1); min-height: 100px; padding: var(--sp-4); background: var(--surface); border: 1px solid var(--border); border-radius: var(--r-md); }
+.k-stat-label { font-size: var(--fs-xs); font-weight: 600; text-transform: uppercase; letter-spacing: 0.06em; color: var(--text-3); }
+.k-stat-value { font-size: var(--fs-2xl); font-weight: 600; line-height: 1.1; color: var(--text); font-variant-numeric: tabular-nums; }
+.k-stat-unit { margin-left: 2px; font-size: var(--fs-md); font-weight: 500; color: var(--text-2); }
+.k-stat-delta { margin-top: auto; font-size: var(--fs-sm); font-variant-numeric: tabular-nums; }
+.k-delta-good { color: var(--ok); }
+.k-delta-bad  { color: var(--crit); }
+.k-delta-flat { color: var(--text-3); }
+
+/* ---- status-pill ---- */
+.k-pill { display: inline-flex; align-items: center; gap: 6px; padding: 2px 10px; border-radius: 999px; font-size: var(--fs-xs); font-weight: 600; letter-spacing: 0.02em; white-space: nowrap; }
+.k-pill-dot { flex: none; width: 7px; height: 7px; border-radius: 50%; background: currentColor; }
+.k-pill.ok      { color: var(--ok);     background: var(--ok-soft); }
+.k-pill.warn    { color: var(--warn);   background: var(--warn-soft); }
+.k-pill.crit    { color: var(--crit);   background: var(--crit-soft); }
+.k-pill.info    { color: var(--accent); background: var(--accent-soft); }
+.k-pill.neutral { color: var(--text-2); background: var(--surface-sunken); }
+.k-stripe.ok   { box-shadow: inset 3px 0 0 var(--ok); }
+.k-stripe.warn { box-shadow: inset 3px 0 0 var(--warn); }
+.k-stripe.crit { box-shadow: inset 3px 0 0 var(--crit); }
+
+/* ---- data-table ---- */
+.k-table-wrap { overflow-x: auto; background: var(--surface); border: 1px solid var(--border); border-radius: var(--r-md); }
+.k-table { width: 100%; border-collapse: collapse; font-size: var(--fs-sm); }
+.k-table th { position: sticky; top: 0; padding: 10px 14px; background: var(--surface); border-bottom: 1px solid var(--border-strong); font-size: var(--fs-xs); font-weight: 600; text-transform: uppercase; letter-spacing: 0.06em; text-align: left; color: var(--text-3); white-space: nowrap; }
+.k-table td { padding: 10px 14px; border-bottom: 1px solid var(--border); color: var(--text); }
+.k-table tbody tr:last-child td { border-bottom: 0; }
+.k-table tbody tr:hover { background: var(--surface-sunken); }
+.k-table .num { text-align: right; font-variant-numeric: tabular-nums; }
+
+/* ---- callout ---- */
+.k-callout { padding: var(--sp-3) var(--sp-4); border-left: 3px solid var(--border-strong); border-radius: var(--r-sm); background: var(--surface-sunken); font-size: var(--fs-sm); line-height: 1.55; color: var(--text-2); }
+.k-callout-title { display: block; margin-bottom: 2px; font-weight: 600; color: var(--text); }
+.k-callout.info { background: var(--accent-soft); border-color: var(--accent); }
+.k-callout.ok   { background: var(--ok-soft);     border-color: var(--ok); }
+.k-callout.warn { background: var(--warn-soft);   border-color: var(--warn); }
+.k-callout.crit { background: var(--crit-soft);   border-color: var(--crit); }
+.g-section .k-callout + .k-callout { margin-top: var(--sp-2); }
+
+/* ---- timeline ---- */
+.k-timeline { list-style: none; margin: 0; padding: 0; }
+.k-timeline li { position: relative; padding: 0 0 var(--sp-4) var(--sp-5); }
+.k-timeline li::before { content: ""; position: absolute; left: 0; top: 5px; width: 9px; height: 9px; border-radius: 50%; background: var(--surface); border: 2px solid var(--text-3); }
+.k-timeline li::after { content: ""; position: absolute; left: 6px; top: 20px; bottom: 2px; width: 1px; background: var(--border); }
+.k-timeline li:last-child { padding-bottom: 0; }
+.k-timeline li:last-child::after { display: none; }
+.k-timeline li.ok::before   { border-color: var(--ok);   background: var(--ok); }
+.k-timeline li.warn::before { border-color: var(--warn); background: var(--warn); }
+.k-timeline li.crit::before { border-color: var(--crit); background: var(--crit); }
+.k-time { font-family: var(--font-mono); font-size: var(--fs-xs); color: var(--text-3); font-variant-numeric: tabular-nums; }
+.k-event-title { font-size: var(--fs-sm); font-weight: 600; color: var(--text); }
+.k-event-body { font-size: var(--fs-sm); color: var(--text-2); }
+
+/* ---- page-header ---- */
+.k-page-header { display: flex; flex-wrap: wrap; align-items: flex-end; justify-content: space-between; gap: var(--sp-4); padding-bottom: var(--sp-4); margin-bottom: var(--sp-5); border-bottom: 1px solid var(--border); }
+.k-eyebrow { font-size: var(--fs-xs); font-weight: 600; text-transform: uppercase; letter-spacing: 0.08em; color: var(--accent); }
+.k-title { margin: var(--sp-1) 0; font-family: var(--font-display); font-size: var(--fs-2xl); font-weight: 650; line-height: 1.15; color: var(--text); text-wrap: balance; }
+.k-meta { display: flex; gap: var(--sp-2); font-size: var(--fs-sm); color: var(--text-3); }
+.k-header-actions { display: flex; gap: var(--sp-2); }
+.k-btn { padding: 6px 14px; border: 1px solid var(--border-strong); border-radius: var(--r-sm); background: var(--surface); color: var(--text); font-size: var(--fs-sm); font-weight: 600; font-family: inherit; cursor: pointer; }
+.k-btn:hover { background: var(--surface-sunken); }
+.k-btn.primary { background: var(--accent); border-color: var(--accent); color: var(--accent-ink); }
+.k-btn.primary:hover { filter: brightness(1.08); }
+
+/* ---- definition-list ---- */
+.k-dl { display: grid; grid-template-columns: max-content 1fr; gap: var(--sp-2) var(--sp-5); margin: 0; font-size: var(--fs-sm); }
+.k-dl dt { color: var(--text-3); white-space: nowrap; }
+.k-dl dd { margin: 0; color: var(--text); overflow-wrap: anywhere; }
+.k-dl dd.mono { font-family: var(--font-mono); font-size: var(--fs-xs); }
+@media (max-width: 480px) {
+  .k-dl { grid-template-columns: 1fr; gap: 2px; }
+  .k-dl dd { margin-bottom: var(--sp-2); }
+}
+
+/* ---- sparkline ---- */
+.k-spark { display: block; overflow: visible; }
+.k-spark-line { fill: none; stroke: var(--accent); stroke-width: 1.5; stroke-linejoin: round; }
+.k-spark-area { fill: var(--accent); opacity: 0.12; stroke: none; }
+.k-spark-dot { fill: var(--accent); }
+.k-spark.good .k-spark-line { stroke: var(--ok); }
+.k-spark.good .k-spark-area, .k-spark.good .k-spark-dot { fill: var(--ok); }
+.k-spark.bad .k-spark-line { stroke: var(--crit); }
+.k-spark.bad .k-spark-area, .k-spark.bad .k-spark-dot { fill: var(--crit); }
+
+/* ---- svg-diagram ---- */
+.k-diagram-wrap { overflow-x: auto; }
+.k-diagram { display: block; width: 100%; height: auto; max-width: 760px; min-width: 560px; font-family: var(--font-body); }
+.k-lane { fill: var(--surface-sunken); rx: 8px; }
+.k-lane-label { font-size: 11px; font-weight: 600; letter-spacing: 0.08em; fill: var(--text-3); }
+.k-edge { fill: none; stroke: var(--text-3); stroke-width: 1.5; }
+.k-edge.dashed { stroke-dasharray: 4 4; }
+.k-arrowhead { fill: var(--text-3); }
+.k-node rect { fill: var(--surface); stroke: var(--border-strong); stroke-width: 1.5; }
+.k-node text { fill: var(--text); font-size: 13px; font-weight: 600; text-anchor: middle; }
+.k-node .k-node-sub { fill: var(--text-3); font-size: 11px; font-weight: 400; }
+.k-node.primary rect { fill: var(--accent-soft); stroke: var(--accent); }
+.k-node.support rect { stroke: var(--border); }
+.k-node.support text { fill: var(--text-2); }
+</style>
+</head>
+<body>
+<div class="g-wrap">
+
+  <div class="g-toolbar">
+    <div>
+      <h1>Artifact kit — gallery</h1>
+      <p>Every component, both themes. Source of truth: <code>components/*.md</code></p>
+    </div>
+    <button class="k-btn" id="theme-toggle" aria-pressed="false">Toggle theme</button>
+  </div>
+
+  <div class="g-section">
+    <h2>Page header</h2>
+    <header class="k-page-header">
+      <div>
+        <span class="k-eyebrow">Weekly report</span>
+        <h1 class="k-title">Checkout reliability — week 27</h1>
+        <div class="k-meta">
+          <span>Jun 29 – Jul 5, 2026</span><span>·</span><span>Generated Jul 3, 14:20 UTC</span>
+        </div>
+      </div>
+      <div class="k-header-actions">
+        <button class="k-btn">Export</button>
+        <button class="k-btn primary">Share</button>
+      </div>
+    </header>
+  </div>
+
+  <div class="g-section">
+    <h2>Stat tiles</h2>
+    <div class="k-stats">
+      <div class="k-stat">
+        <span class="k-stat-label">Error rate</span>
+        <span class="k-stat-value">0.42<span class="k-stat-unit">%</span></span>
+        <span class="k-stat-delta k-delta-good">▼ 0.11 pts vs last week</span>
+      </div>
+      <div class="k-stat">
+        <span class="k-stat-label">P95 latency</span>
+        <span class="k-stat-value">218<span class="k-stat-unit">ms</span></span>
+        <span class="k-stat-delta k-delta-bad">▲ 34 ms vs last week</span>
+      </div>
+      <div class="k-stat">
+        <span class="k-stat-label">Deploys</span>
+        <span class="k-stat-value">12</span>
+        <span class="k-stat-delta k-delta-flat">— unchanged</span>
+      </div>
+      <div class="k-stat">
+        <span class="k-stat-label">Uptime</span>
+        <span class="k-stat-value">99.97<span class="k-stat-unit">%</span></span>
+        <svg class="k-spark good" width="120" height="24" viewBox="0 0 120 24" role="img" aria-label="Uptime trend: stable">
+          <path class="k-spark-area" d="M0,14 L20,12 L40,13 L60,9 L80,10 L100,6 L120,7 L120,24 L0,24 Z"/>
+          <path class="k-spark-line" d="M0,14 L20,12 L40,13 L60,9 L80,10 L100,6 L120,7"/>
+          <circle class="k-spark-dot" cx="120" cy="7" r="2.5"/>
+        </svg>
+      </div>
+    </div>
+  </div>
+
+  <div class="g-section">
+    <h2>Status pills</h2>
+    <div class="g-row">
+      <span class="k-pill ok"><span class="k-pill-dot"></span>Healthy</span>
+      <span class="k-pill warn"><span class="k-pill-dot"></span>Degraded</span>
+      <span class="k-pill crit"><span class="k-pill-dot"></span>Failing</span>
+      <span class="k-pill info"><span class="k-pill-dot"></span>Deploying</span>
+      <span class="k-pill neutral"><span class="k-pill-dot"></span>Archived</span>
+    </div>
+    <p class="g-note">Severity stripe variant shown on the second table row below.</p>
+  </div>
+
+  <div class="g-section">
+    <h2>Data table</h2>
+    <div class="k-table-wrap">
+      <table class="k-table">
+        <thead>
+          <tr>
+            <th>Service</th><th>Status</th>
+            <th class="num">P95 (ms)</th><th class="num">Errors / min</th><th>Last deploy</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>checkout-api</td>
+            <td><span class="k-pill ok"><span class="k-pill-dot"></span>Healthy</span></td>
+            <td class="num">218</td><td class="num">0.4</td><td>2h ago</td>
+          </tr>
+          <tr class="k-stripe crit">
+            <td>payments-worker</td>
+            <td><span class="k-pill crit"><span class="k-pill-dot"></span>Failing</span></td>
+            <td class="num">1,940</td><td class="num">12.7</td><td>41m ago</td>
+          </tr>
+          <tr>
+            <td>search-indexer</td>
+            <td><span class="k-pill warn"><span class="k-pill-dot"></span>Degraded</span></td>
+            <td class="num">640</td><td class="num">2.1</td><td>1d ago</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <div class="g-section">
+    <h2>Callouts</h2>
+    <div class="k-callout info">
+      <strong class="k-callout-title">Rollup decision</strong>
+      Weekly numbers use the new event schema; the migration doc records the mapping.
+    </div>
+    <div class="k-callout warn">
+      <strong class="k-callout-title">Partial data</strong>
+      Metrics before June 12 predate the new event schema; comparisons across that boundary undercount by roughly 8%.
+    </div>
+    <div class="k-callout crit">
+      <strong class="k-callout-title">Active incident</strong>
+      payments-worker is failing since 14:02 — rollback in progress, see the timeline below.
+    </div>
+    <div class="k-callout ok">
+      <strong class="k-callout-title">Verified</strong>
+      All 214 migration checks passed on the staging replica.
+    </div>
+  </div>
+
+  <div class="g-section">
+    <h2>Timeline</h2>
+    <ol class="k-timeline">
+      <li class="crit">
+        <time class="k-time">14:02</time>
+        <div class="k-event-title">Error rate crosses 5% on checkout-api</div>
+        <div class="k-event-body">Alert fired; on-call paged.</div>
+      </li>
+      <li>
+        <time class="k-time">14:11</time>
+        <div class="k-event-title">Root cause identified</div>
+        <div class="k-event-body">Bad config in the 14:00 deploy of payments-worker.</div>
+      </li>
+      <li class="ok">
+        <time class="k-time">14:19</time>
+        <div class="k-event-title">Rolled back — error rate recovered</div>
+      </li>
+    </ol>
+  </div>
+
+  <div class="g-section">
+    <h2>Definition list</h2>
+    <dl class="k-dl">
+      <dt>Environment</dt>   <dd>production (eu-west-1)</dd>
+      <dt>Version</dt>       <dd class="mono">v2.14.3</dd>
+      <dt>Owner</dt>         <dd>payments-team</dd>
+      <dt>Status</dt>        <dd><span class="k-pill ok"><span class="k-pill-dot"></span>Healthy</span></dd>
+      <dt>Last incident</dt> <dd>none in 90 days</dd>
+    </dl>
+  </div>
+
+  <div class="g-section">
+    <h2>Sparklines</h2>
+    <div class="g-row" style="gap: var(--sp-5);">
+      <svg class="k-spark" width="120" height="32" viewBox="0 0 120 32" role="img" aria-label="Trend: rising">
+        <path class="k-spark-area" d="M0,26 L9.2,24 L18.5,25 L27.7,20 L36.9,22 L46.2,16 L55.4,18 L64.6,12 L73.8,14 L83.1,9 L92.3,11 L101.5,7 L110.8,8 L120,5 L120,32 L0,32 Z"/>
+        <path class="k-spark-line" d="M0,26 L9.2,24 L18.5,25 L27.7,20 L36.9,22 L46.2,16 L55.4,18 L64.6,12 L73.8,14 L83.1,9 L92.3,11 L101.5,7 L110.8,8 L120,5"/>
+        <circle class="k-spark-dot" cx="120" cy="5" r="2.5"/>
+      </svg>
+      <svg class="k-spark good" width="120" height="32" viewBox="0 0 120 32" role="img" aria-label="Error trend: falling (good)">
+        <path class="k-spark-area" d="M0,6 L20,9 L40,8 L60,14 L80,13 L100,21 L120,24 L120,32 L0,32 Z"/>
+        <path class="k-spark-line" d="M0,6 L20,9 L40,8 L60,14 L80,13 L100,21 L120,24"/>
+        <circle class="k-spark-dot" cx="120" cy="24" r="2.5"/>
+      </svg>
+      <svg class="k-spark bad" width="120" height="32" viewBox="0 0 120 32" role="img" aria-label="Latency trend: rising (bad)">
+        <path class="k-spark-area" d="M0,24 L20,22 L40,23 L60,17 L80,18 L100,10 L120,6 L120,32 L0,32 Z"/>
+        <path class="k-spark-line" d="M0,24 L20,22 L40,23 L60,17 L80,18 L100,10 L120,6"/>
+        <circle class="k-spark-dot" cx="120" cy="6" r="2.5"/>
+      </svg>
+    </div>
+  </div>
+
+  <div class="g-section">
+    <h2>SVG diagram scaffold</h2>
+    <div class="k-diagram-wrap">
+    <svg class="k-diagram" viewBox="0 0 720 300" role="img"
+         aria-label="Request flow: client through gateway to services">
+      <defs>
+        <marker id="k-arrow" viewBox="0 0 8 8" refX="7" refY="4"
+                markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+          <path d="M0,0 L8,4 L0,8 Z" class="k-arrowhead"/>
+        </marker>
+      </defs>
+      <g class="k-lanes">
+        <rect class="k-lane" x="8" y="8" width="704" height="130"/>
+        <text class="k-lane-label" x="24" y="30">USER-FACING</text>
+        <rect class="k-lane" x="8" y="150" width="704" height="140"/>
+        <text class="k-lane-label" x="24" y="172">SUPPORT</text>
+      </g>
+      <g class="k-edges">
+        <path class="k-edge" d="M188,80 H300" marker-end="url(#k-arrow)"/>
+        <path class="k-edge" d="M440,80 H520" marker-end="url(#k-arrow)"/>
+        <path class="k-edge dashed" d="M370,110 V190" marker-end="url(#k-arrow)"/>
+      </g>
+      <g class="k-nodes">
+        <g class="k-node primary">
+          <rect x="60" y="52" width="128" height="56" rx="6"/>
+          <text x="124" y="76">Client</text>
+          <text class="k-node-sub" x="124" y="93">web + mobile</text>
+        </g>
+        <g class="k-node">
+          <rect x="300" y="52" width="140" height="56" rx="6"/>
+          <text x="370" y="84">API gateway</text>
+        </g>
+        <g class="k-node">
+          <rect x="520" y="52" width="140" height="56" rx="6"/>
+          <text x="590" y="84">checkout-api</text>
+        </g>
+        <g class="k-node support">
+          <rect x="300" y="196" width="140" height="52" rx="6"/>
+          <text x="370" y="226">Audit log</text>
+        </g>
+      </g>
+    </svg>
+    </div>
+  </div>
+
+</div>
+
+<script>
+  const toggle = document.getElementById('theme-toggle');
+  toggle.addEventListener('click', () => {
+    const root = document.documentElement;
+    const dark = matchMedia('(prefers-color-scheme: dark)').matches;
+    const current = root.dataset.theme || (dark ? 'dark' : 'light');
+    const next = current === 'dark' ? 'light' : 'dark';
+    root.dataset.theme = next;
+    toggle.setAttribute('aria-pressed', String(next === 'dark'));
+  });
+</script>
+</body>
+</html>

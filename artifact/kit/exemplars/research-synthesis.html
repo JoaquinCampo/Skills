@@ -1,0 +1,547 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Why production agents fail — research synthesis</title>
+<link rel="stylesheet" href="../tokens.css">
+<style>
+/* Treatment: research digest. Serif display via token override — the kit
+   restyles by swapping token values, components untouched. */
+:root {
+  --font-display: "Charter", "Iowan Old Style", "Palatino", Georgia, serif;
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { padding: 0; }
+
+/* ---------- document shell: sticky TOC + measure-limited column ---------- */
+.shell {
+  display: grid;
+  grid-template-columns: 190px minmax(0, 760px);
+  gap: var(--sp-7);
+  max-width: 1040px;
+  margin: 0 auto;
+  padding: var(--sp-6) var(--sp-5) var(--sp-7);
+}
+.toc {
+  position: sticky;
+  top: var(--sp-5);
+  align-self: start;
+  font-size: var(--fs-sm);
+}
+.toc-label {
+  font-size: var(--fs-xs); font-weight: 600; text-transform: uppercase;
+  letter-spacing: 0.08em; color: var(--text-3); margin-bottom: var(--sp-2);
+}
+.toc a {
+  display: block; padding: 5px 0 5px 12px;
+  color: var(--text-2); text-decoration: none;
+  border-left: 2px solid var(--border);
+}
+.toc a:hover { color: var(--text); border-left-color: var(--border-strong); }
+.toc .k-btn { margin-top: var(--sp-4); }
+@media (max-width: 900px) {
+  .shell { grid-template-columns: minmax(0, 1fr); gap: 0; }
+  .toc { position: static; margin-bottom: var(--sp-5); }
+  .toc a { display: inline-block; border-left: 0; padding: 4px 12px 4px 0; }
+}
+
+section { margin-bottom: var(--sp-7); }
+.sec-head {
+  display: flex; justify-content: space-between; align-items: baseline;
+  gap: var(--sp-3); margin-bottom: var(--sp-4);
+  padding-bottom: var(--sp-2); border-bottom: 1px solid var(--border);
+}
+.sec-head h2 { font-family: var(--font-display); font-size: var(--fs-lg); font-weight: 600; }
+.pattern-tag { font-family: var(--font-mono); font-size: 11px; color: var(--text-3); white-space: nowrap; }
+
+/* ---------- header ---------- */
+.doc-head { margin-bottom: var(--sp-6); }
+.k-eyebrow {
+  font-size: var(--fs-xs); font-weight: 600; text-transform: uppercase;
+  letter-spacing: 0.08em; color: var(--accent);
+}
+.doc-head h1 {
+  font-family: var(--font-display); font-size: 2.25rem; font-weight: 600;
+  line-height: 1.12; text-wrap: balance; margin: var(--sp-2) 0 var(--sp-3);
+}
+.doc-meta { display: flex; flex-wrap: wrap; gap: var(--sp-2); font-size: var(--fs-sm); color: var(--text-3); }
+.abstract {
+  margin-top: var(--sp-4); max-width: 62ch;
+  font-size: var(--fs-md); line-height: 1.65; color: var(--text-2);
+}
+.abstract strong { color: var(--text); }
+
+/* ---------- pattern: evidence card ---------- */
+.finding { padding: var(--sp-5) 0; border-bottom: 1px solid var(--border); }
+.finding:last-child { border-bottom: 0; }
+.finding-top { display: flex; justify-content: space-between; align-items: flex-start; gap: var(--sp-4); }
+.finding-claim {
+  font-family: var(--font-display); font-size: 1.25rem; font-weight: 600;
+  line-height: 1.3; text-wrap: balance; max-width: 34em;
+}
+.finding-meta { margin-top: var(--sp-2); font-size: var(--fs-sm); color: var(--text-3); }
+.finding-why { margin-top: var(--sp-2); font-size: var(--fs-sm); line-height: 1.6; color: var(--text-2); max-width: 66ch; }
+
+.k-pill {
+  display: inline-flex; align-items: center; gap: 6px; padding: 2px 10px;
+  border-radius: 999px; font-size: var(--fs-xs); font-weight: 600;
+  letter-spacing: 0.02em; white-space: nowrap; flex: none;
+}
+.k-pill-dot { flex: none; width: 7px; height: 7px; border-radius: 50%; background: currentColor; }
+.k-pill.ok      { color: var(--ok);     background: var(--ok-soft); }
+.k-pill.warn    { color: var(--warn);   background: var(--warn-soft); }
+.k-pill.crit    { color: var(--crit);   background: var(--crit-soft); }
+.k-pill.neutral { color: var(--text-2); background: var(--surface-sunken); }
+
+details.evidence { margin-top: var(--sp-3); }
+details.evidence > summary {
+  display: inline-flex; align-items: center; gap: 6px;
+  font-size: var(--fs-sm); font-weight: 600; color: var(--accent);
+  cursor: pointer; list-style: none; user-select: none;
+}
+details.evidence > summary::-webkit-details-marker { display: none; }
+details.evidence > summary::before { content: "▸"; font-size: 10px; transition: transform 0.12s; }
+details.evidence[open] > summary::before { transform: rotate(90deg); }
+.quote {
+  margin: var(--sp-3) 0 0; padding: var(--sp-3) var(--sp-4);
+  background: var(--surface-sunken); border-radius: var(--r-sm);
+  font-size: var(--fs-sm); line-height: 1.6; color: var(--text-2);
+}
+.quote p { font-family: var(--font-display); font-style: italic; color: var(--text); }
+.quote footer { margin-top: var(--sp-2); display: flex; flex-wrap: wrap; gap: var(--sp-2); align-items: center; font-style: normal; color: var(--text-3); font-size: var(--fs-xs); }
+.src-type { font-family: var(--font-mono); font-size: 10px; padding: 1px 7px; border-radius: 3px; background: var(--surface); border: 1px solid var(--border); color: var(--text-2); }
+.versus { display: grid; grid-template-columns: 1fr 1fr; gap: var(--sp-3); margin-top: var(--sp-3); }
+.versus-col > .vlabel { font-size: var(--fs-xs); font-weight: 600; text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: var(--sp-1); }
+.versus-col.for  > .vlabel { color: var(--ok); }
+.versus-col.against > .vlabel { color: var(--crit); }
+.versus .quote { margin-top: 0; }
+@media (max-width: 640px) { .versus { grid-template-columns: 1fr; } }
+
+/* ---------- pattern: theme clusters ---------- */
+.clusters { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: var(--sp-3); }
+.cluster {
+  padding: var(--sp-4); background: var(--surface);
+  border: 1px solid var(--border); border-radius: var(--r-md);
+  display: flex; flex-direction: column; gap: var(--sp-2);
+}
+.cluster-top { display: flex; justify-content: space-between; align-items: baseline; gap: var(--sp-2); }
+.cluster-name { font-weight: 650; font-size: var(--fs-md); display: flex; align-items: center; gap: 8px; }
+.cluster-swatch { width: 10px; height: 10px; border-radius: 3px; flex: none; }
+.cluster-count { font-variant-numeric: tabular-nums; font-size: var(--fs-sm); color: var(--text-3); white-space: nowrap; }
+.cluster-bar { height: 3px; border-radius: 2px; background: var(--surface-sunken); overflow: hidden; }
+.cluster-bar i { display: block; height: 100%; border-radius: 2px; }
+.cluster-quote { font-family: var(--font-display); font-style: italic; font-size: var(--fs-sm); line-height: 1.5; color: var(--text-2); }
+.cluster-tags { display: flex; flex-wrap: wrap; gap: 6px; margin-top: auto; }
+.tag { font-size: var(--fs-xs); padding: 1px 8px; border-radius: 999px; background: var(--surface-sunken); color: var(--text-2); }
+
+/* ---------- pattern: agreement matrix ---------- */
+.matrix-wrap { overflow-x: auto; border: 1px solid var(--border); border-radius: var(--r-md); background: var(--surface); }
+.matrix { width: 100%; border-collapse: collapse; font-size: var(--fs-sm); min-width: 620px; }
+.matrix th {
+  padding: 10px 12px; font-size: var(--fs-xs); font-weight: 600;
+  text-transform: uppercase; letter-spacing: 0.05em; color: var(--text-3);
+  border-bottom: 1px solid var(--border-strong); text-align: center; white-space: nowrap;
+}
+.matrix th:first-child { text-align: left; }
+.matrix td { padding: 8px 12px; border-bottom: 1px solid var(--border); text-align: center; }
+.matrix tr:last-child td { border-bottom: 0; }
+.matrix td:first-child { text-align: left; color: var(--text); max-width: 30ch; }
+.cell { display: inline-flex; width: 26px; height: 26px; border-radius: 6px; align-items: center; justify-content: center; font-size: 11px; font-weight: 700; }
+.cell.s { background: var(--ok-soft);   color: var(--ok); }
+.cell.m { background: var(--warn-soft); color: var(--warn); }
+.cell.c { background: var(--crit-soft); color: var(--crit); }
+.cell.n { background: var(--surface-sunken); color: var(--text-3); }
+.legend { display: flex; flex-wrap: wrap; gap: var(--sp-4); margin-top: var(--sp-2); font-size: var(--fs-xs); color: var(--text-3); align-items: center; }
+.legend span { display: inline-flex; align-items: center; gap: 6px; }
+
+/* ---------- pattern: network ---------- */
+.net-wrap { overflow-x: auto; }
+.net { display: block; width: 100%; min-width: 560px; max-width: 760px; height: auto; }
+.net .edge { stroke: var(--border-strong); stroke-width: 1; fill: none; }
+.net .edge.bridge { stroke-dasharray: 3 4; }
+.net circle { stroke: var(--surface); stroke-width: 1.5; }
+.net .c1 { fill: var(--cat-1); } .net .c2 { fill: var(--cat-2); } .net .c3 { fill: var(--cat-3); }
+.net text { font-size: 11px; fill: var(--text-2); }
+.net .nlabel-major { font-weight: 600; fill: var(--text); }
+.sw1 { background: var(--cat-1); } .sw2 { background: var(--cat-2); } .sw3 { background: var(--cat-3); }
+.sw4 { background: var(--cat-4); } .sw5 { background: var(--cat-5); }
+.dotswatch { width: 9px; height: 9px; border-radius: 50%; display: inline-block; }
+
+/* ---------- pattern: density heatmap ---------- */
+.heat { display: grid; grid-template-columns: max-content repeat(8, 1fr); gap: 4px; align-items: center; max-width: 640px; }
+.heat .rowlab { font-size: var(--fs-sm); color: var(--text-2); padding-right: var(--sp-3); white-space: nowrap; }
+.heat .collab { font-size: var(--fs-xs); color: var(--text-3); text-align: center; font-variant-numeric: tabular-nums; }
+.heat .hcell { height: 26px; border-radius: 4px; }
+.l0 { background: var(--surface-sunken); }
+.l1 { background: color-mix(in srgb, var(--accent) 15%, var(--surface-sunken)); }
+.l2 { background: color-mix(in srgb, var(--accent) 35%, var(--surface-sunken)); }
+.l3 { background: color-mix(in srgb, var(--accent) 60%, var(--surface-sunken)); }
+.l4 { background: color-mix(in srgb, var(--accent) 90%, var(--surface-sunken)); }
+.heat-note { margin-top: var(--sp-3); font-size: var(--fs-sm); color: var(--text-2); max-width: 66ch; line-height: 1.6; }
+
+/* ---------- callout + button (kit) ---------- */
+.k-callout {
+  padding: var(--sp-3) var(--sp-4); border-left: 3px solid var(--border-strong);
+  border-radius: var(--r-sm); background: var(--surface-sunken);
+  font-size: var(--fs-sm); line-height: 1.6; color: var(--text-2); max-width: 70ch;
+}
+.k-callout-title { display: block; margin-bottom: 2px; font-weight: 600; color: var(--text); }
+.k-callout.info { background: var(--accent-soft); border-color: var(--accent); }
+.k-btn {
+  padding: 5px 12px; border: 1px solid var(--border-strong); border-radius: var(--r-sm);
+  background: var(--surface); color: var(--text); font-size: var(--fs-sm);
+  font-weight: 600; font-family: var(--font-body); cursor: pointer;
+}
+.k-btn:hover { background: var(--surface-sunken); }
+</style>
+</head>
+<body>
+<div class="shell">
+
+  <aside class="toc">
+    <div class="toc-label">Contents</div>
+    <a href="#findings">Findings</a>
+    <a href="#themes">Theme landscape</a>
+    <a href="#agreement">Where sources disagree</a>
+    <a href="#network">Citation network</a>
+    <a href="#attention">Attention over time</a>
+    <a href="#method">Method</a>
+    <button class="k-btn" id="theme-toggle">Toggle theme</button>
+  </aside>
+
+  <main>
+
+    <header class="doc-head">
+      <span class="k-eyebrow">Research synthesis</span>
+      <h1>Why production agents fail: what 52 sources actually agree on</h1>
+      <div class="doc-meta">
+        <span>52 sources</span><span>·</span><span>31 incident postmortems</span><span>·</span>
+        <span>14 practitioner interviews</span><span>·</span><span>synthesized Jul 3, 2026</span>
+      </div>
+      <p class="abstract">
+        The public conversation blames model capability; the evidence mostly doesn't.
+        Across postmortems, papers, and interviews, <strong>failures concentrate in the
+        scaffolding around the model</strong> — context management, tool interfaces, and
+        evaluation practices that measure the wrong unit. One question stays genuinely
+        contested: whether tighter guardrails reduce failures or just relocate them.
+      </p>
+    </header>
+
+    <section id="findings">
+      <div class="sec-head">
+        <h2>Findings</h2>
+        <span class="pattern-tag">pattern: evidence-card</span>
+      </div>
+
+      <article class="finding">
+        <div class="finding-top">
+          <h3 class="finding-claim">Most production failures are context-management failures, not model failures.</h3>
+          <span class="k-pill ok"><span class="k-pill-dot"></span>High confidence</span>
+        </div>
+        <div class="finding-meta">19 of 52 sources · strongest evidence: incident postmortems (11)</div>
+        <p class="finding-why">Teams that instrumented their agents traced the majority of bad outputs to stale, truncated, or contradictory context — the model behaved reasonably given what it was shown. Capability upgrades didn't fix these; context discipline did.</p>
+        <details class="evidence">
+          <summary>Evidence (3 of 19)</summary>
+          <blockquote class="quote">
+            <p>"We upgraded models twice chasing this bug. The fix was deleting 40k tokens of accumulated tool output that contradicted the current state."</p>
+            <footer><span class="src-type">POSTMORTEM</span><span>Checkout-agent incident review, fintech platform</span><span>·</span><span>2025</span></footer>
+          </blockquote>
+          <blockquote class="quote">
+            <p>"Retrieval quality explained 3× more variance in task success than model choice across our 1,200-session sample."</p>
+            <footer><span class="src-type">PAPER</span><span>Long-horizon agent reliability study</span><span>·</span><span>2026</span></footer>
+          </blockquote>
+          <blockquote class="quote">
+            <p>"Every on-call page I got last quarter was context rot. Not one was the model being dumb."</p>
+            <footer><span class="src-type">INTERVIEW</span><span>Staff engineer, agent infrastructure team</span><span>·</span><span>2026</span></footer>
+          </blockquote>
+        </details>
+      </article>
+
+      <article class="finding">
+        <div class="finding-top">
+          <h3 class="finding-claim">Eval suites overestimate reliability because they score tasks, not sessions.</h3>
+          <span class="k-pill warn"><span class="k-pill-dot"></span>Moderate confidence</span>
+        </div>
+        <div class="finding-meta">11 sources · mostly academic; thin on industry replication</div>
+        <p class="finding-why">Benchmarks measure single, well-posed tasks. Production work is a session: goals drift, state accumulates, and errors compound across turns. Sources report benchmark-to-production gaps of 20–40 points on the same underlying model.</p>
+        <details class="evidence">
+          <summary>Evidence (2 of 11)</summary>
+          <blockquote class="quote">
+            <p>"Per-task pass rate was 91%. Per-session — the unit users experience — it was 54%."</p>
+            <footer><span class="src-type">PAPER</span><span>Session-level evaluation of coding agents</span><span>·</span><span>2025</span></footer>
+          </blockquote>
+          <blockquote class="quote">
+            <p>"Our leaderboard position told us nothing about week-two retention. Compounding error did."</p>
+            <footer><span class="src-type">BLOG</span><span>Agent product team retro</span><span>·</span><span>2026</span></footer>
+          </blockquote>
+        </details>
+      </article>
+
+      <article class="finding">
+        <div class="finding-top">
+          <h3 class="finding-claim">Multi-agent systems fail through coordination, and the failure is usually silent.</h3>
+          <span class="k-pill warn"><span class="k-pill-dot"></span>Moderate confidence</span>
+        </div>
+        <div class="finding-meta">9 sources · all post-2024; the phenomenon is young</div>
+        <p class="finding-why">Sub-agents don't crash — they quietly diverge: duplicated work, dropped handoffs, one agent undoing another's changes. Detection lags because each agent's local transcript looks fine; only the composed result is wrong.</p>
+        <details class="evidence">
+          <summary>Evidence (2 of 9)</summary>
+          <blockquote class="quote">
+            <p>"Two writer agents each 'fixed' the config, alternating, 14 times. Neither log looked abnormal in isolation."</p>
+            <footer><span class="src-type">POSTMORTEM</span><span>Orchestration deadlock write-up</span><span>·</span><span>2026</span></footer>
+          </blockquote>
+          <blockquote class="quote">
+            <p>"Coordination overhead grew faster than fan-out gains beyond four concurrent agents on interdependent tasks."</p>
+            <footer><span class="src-type">PAPER</span><span>Multi-agent scaling measurement</span><span>·</span><span>2026</span></footer>
+          </blockquote>
+        </details>
+      </article>
+
+      <article class="finding">
+        <div class="finding-top">
+          <h3 class="finding-claim">Do tighter guardrails actually reduce failures? The sources split.</h3>
+          <span class="k-pill crit"><span class="k-pill-dot"></span>Contested</span>
+        </div>
+        <div class="finding-meta">13 sources · 7 supporting, 6 contradicting · split tracks org size</div>
+        <p class="finding-why">Larger orgs report guardrails catching real incidents; smaller teams report failures migrating to the approval boundary itself — rubber-stamped prompts, workarounds, and automation that routes around the check. The disagreement looks structural, not evidentiary.</p>
+        <div class="versus">
+          <div class="versus-col for">
+            <div class="vlabel">Supporting</div>
+            <blockquote class="quote">
+              <p>"Mandatory plan review caught 60% of would-be destructive actions in our first quarter."</p>
+              <footer><span class="src-type">POSTMORTEM</span><span>Enterprise rollout report</span><span>·</span><span>2025</span></footer>
+            </blockquote>
+          </div>
+          <div class="versus-col against">
+            <div class="vlabel">Contradicting</div>
+            <blockquote class="quote">
+              <p>"Approval fatigue set in by week three. Reviewers approved 97% of requests in under four seconds."</p>
+              <footer><span class="src-type">INTERVIEW</span><span>Platform lead, 40-person startup</span><span>·</span><span>2026</span></footer>
+            </blockquote>
+          </div>
+        </div>
+      </article>
+    </section>
+
+    <section id="themes">
+      <div class="sec-head">
+        <h2>Theme landscape</h2>
+        <span class="pattern-tag">pattern: theme-clusters</span>
+      </div>
+      <div class="clusters">
+        <div class="cluster">
+          <div class="cluster-top">
+            <span class="cluster-name"><i class="cluster-swatch sw1"></i>Context engineering</span>
+            <span class="cluster-count">24 sources</span>
+          </div>
+          <div class="cluster-bar"><i class="sw1" style="width:100%"></i></div>
+          <p class="cluster-quote">"The model is a function of its context window; most bugs live in the argument, not the function."</p>
+          <div class="cluster-tags"><span class="tag">context rot</span><span class="tag">retrieval</span><span class="tag">memory</span><span class="tag">compaction</span></div>
+        </div>
+        <div class="cluster">
+          <div class="cluster-top">
+            <span class="cluster-name"><i class="cluster-swatch sw2"></i>Evaluation gaps</span>
+            <span class="cluster-count">18 sources</span>
+          </div>
+          <div class="cluster-bar"><i class="sw2" style="width:75%"></i></div>
+          <p class="cluster-quote">"We measure what's easy to score, then act surprised when production disagrees."</p>
+          <div class="cluster-tags"><span class="tag">session evals</span><span class="tag">benchmarks</span><span class="tag">drift</span></div>
+        </div>
+        <div class="cluster">
+          <div class="cluster-top">
+            <span class="cluster-name"><i class="cluster-swatch sw3"></i>Human oversight</span>
+            <span class="cluster-count">14 sources</span>
+          </div>
+          <div class="cluster-bar"><i class="sw3" style="width:58%"></i></div>
+          <p class="cluster-quote">"The review step works exactly as long as the reviewer still reads."</p>
+          <div class="cluster-tags"><span class="tag">approval fatigue</span><span class="tag">trust calibration</span><span class="tag">HITL</span></div>
+        </div>
+        <div class="cluster">
+          <div class="cluster-top">
+            <span class="cluster-name"><i class="cluster-swatch sw4"></i>Tool interfaces</span>
+            <span class="cluster-count">12 sources</span>
+          </div>
+          <div class="cluster-bar"><i class="sw4" style="width:50%"></i></div>
+          <p class="cluster-quote">"Ambiguous tool errors turn one mistake into five confident retries."</p>
+          <div class="cluster-tags"><span class="tag">error design</span><span class="tag">idempotency</span><span class="tag">schemas</span></div>
+        </div>
+        <div class="cluster">
+          <div class="cluster-top">
+            <span class="cluster-name"><i class="cluster-swatch sw5"></i>Cost &amp; latency</span>
+            <span class="cluster-count">9 sources</span>
+          </div>
+          <div class="cluster-bar"><i class="sw5" style="width:38%"></i></div>
+          <p class="cluster-quote">"Teams quietly cap depth to control spend, then attribute the quality drop to the model."</p>
+          <div class="cluster-tags"><span class="tag">budgets</span><span class="tag">caching</span><span class="tag">truncation</span></div>
+        </div>
+      </div>
+    </section>
+
+    <section id="agreement">
+      <div class="sec-head">
+        <h2>Where sources disagree</h2>
+        <span class="pattern-tag">pattern: agreement-matrix</span>
+      </div>
+      <div class="matrix-wrap">
+        <table class="matrix">
+          <thead>
+            <tr>
+              <th>Claim</th><th>Academic</th><th>Postmortems</th><th>Practitioner blogs</th><th>Vendor docs</th><th>Interviews</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>Context failures dominate</td>
+              <td><span class="cell s">✓</span></td><td><span class="cell s">✓</span></td>
+              <td><span class="cell s">✓</span></td><td><span class="cell m">~</span></td><td><span class="cell s">✓</span></td>
+            </tr>
+            <tr>
+              <td>Task evals overestimate reliability</td>
+              <td><span class="cell s">✓</span></td><td><span class="cell m">~</span></td>
+              <td><span class="cell s">✓</span></td><td><span class="cell c">✕</span></td><td><span class="cell s">✓</span></td>
+            </tr>
+            <tr>
+              <td>Multi-agent failure is silent</td>
+              <td><span class="cell m">~</span></td><td><span class="cell s">✓</span></td>
+              <td><span class="cell m">~</span></td><td><span class="cell n">—</span></td><td><span class="cell s">✓</span></td>
+            </tr>
+            <tr>
+              <td>Guardrails reduce net failures</td>
+              <td><span class="cell m">~</span></td><td><span class="cell s">✓</span></td>
+              <td><span class="cell c">✕</span></td><td><span class="cell s">✓</span></td><td><span class="cell c">✕</span></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="legend">
+        <span><span class="cell s" style="width:18px;height:18px">✓</span> supports</span>
+        <span><span class="cell m" style="width:18px;height:18px">~</span> mixed</span>
+        <span><span class="cell c" style="width:18px;height:18px">✕</span> contradicts</span>
+        <span><span class="cell n" style="width:18px;height:18px">—</span> no coverage</span>
+      </div>
+      <p class="heat-note">Read the last row: vendors and enterprise postmortems endorse guardrails; the people operating small teams don't. That's the contested finding above, visible structurally.</p>
+    </section>
+
+    <section id="network">
+      <div class="sec-head">
+        <h2>Citation network</h2>
+        <span class="pattern-tag">pattern: network-map</span>
+      </div>
+      <div class="net-wrap">
+        <svg class="net" viewBox="0 0 720 360" role="img"
+             aria-label="Citation network: three clusters — context engineering, evaluation, human factors — bridged by the session-evals paper">
+          <g>
+            <line class="edge" x1="120" y1="110" x2="205" y2="168"/>
+            <line class="edge" x1="120" y1="110" x2="172" y2="62"/>
+            <line class="edge" x1="120" y1="110" x2="88"  y2="205"/>
+            <line class="edge" x1="205" y1="168" x2="88"  y2="205"/>
+            <line class="edge" x1="205" y1="168" x2="248" y2="96"/>
+            <line class="edge" x1="172" y1="62"  x2="248" y2="96"/>
+            <line class="edge" x1="460" y1="82"  x2="548" y2="132"/>
+            <line class="edge" x1="460" y1="82"  x2="612" y2="66"/>
+            <line class="edge" x1="548" y1="132" x2="612" y2="66"/>
+            <line class="edge" x1="460" y1="82"  x2="492" y2="176"/>
+            <line class="edge" x1="382" y1="288" x2="304" y2="248"/>
+            <line class="edge" x1="382" y1="288" x2="470" y2="268"/>
+            <line class="edge" x1="470" y1="268" x2="552" y2="308"/>
+            <line class="edge bridge" x1="205" y1="168" x2="460" y2="82"/>
+            <line class="edge bridge" x1="492" y1="176" x2="382" y2="288"/>
+            <line class="edge bridge" x1="120" y1="110" x2="460" y2="82"/>
+          </g>
+          <g>
+            <circle class="c1" cx="120" cy="110" r="13"/>
+            <circle class="c1" cx="205" cy="168" r="11"/>
+            <circle class="c1" cx="172" cy="62"  r="7"/>
+            <circle class="c1" cx="88"  cy="205" r="8"/>
+            <circle class="c1" cx="248" cy="96"  r="5"/>
+            <circle class="c2" cx="460" cy="82"  r="12"/>
+            <circle class="c2" cx="548" cy="132" r="9"/>
+            <circle class="c2" cx="612" cy="66"  r="7"/>
+            <circle class="c2" cx="492" cy="176" r="6"/>
+            <circle class="c3" cx="382" cy="288" r="11"/>
+            <circle class="c3" cx="304" cy="248" r="8"/>
+            <circle class="c3" cx="470" cy="268" r="7"/>
+            <circle class="c3" cx="552" cy="308" r="6"/>
+          </g>
+          <g>
+            <text class="nlabel-major" x="120" y="88" text-anchor="middle">Context-rot study</text>
+            <text class="nlabel-major" x="205" y="192" text-anchor="middle">Postmortem corpus</text>
+            <text class="nlabel-major" x="460" y="60" text-anchor="middle">Session-evals paper</text>
+            <text x="548" y="152" text-anchor="middle">Leaderboard critique</text>
+            <text class="nlabel-major" x="382" y="312" text-anchor="middle">Oversight field study</text>
+            <text x="304" y="236" text-anchor="middle">HITL patterns</text>
+          </g>
+        </svg>
+      </div>
+      <div class="legend">
+        <span><i class="dotswatch sw1"></i> context engineering</span>
+        <span><i class="dotswatch sw2"></i> evaluation</span>
+        <span><i class="dotswatch sw3"></i> human factors</span>
+        <span>node size = times cited within corpus · dashed = cross-cluster citation</span>
+      </div>
+      <p class="heat-note">The session-evals paper is the only node bridging all three clusters — the literature's connective tissue. If you read one source, read that one.</p>
+    </section>
+
+    <section id="attention">
+      <div class="sec-head">
+        <h2>Attention over time</h2>
+        <span class="pattern-tag">pattern: density-heatmap</span>
+      </div>
+      <div class="heat">
+        <span class="rowlab" aria-hidden="true"></span>
+        <span class="collab">'19</span><span class="collab">'20</span><span class="collab">'21</span><span class="collab">'22</span>
+        <span class="collab">'23</span><span class="collab">'24</span><span class="collab">'25</span><span class="collab">'26</span>
+
+        <span class="rowlab">Hallucination</span>
+        <i class="hcell l1" title="2019: low"></i><i class="hcell l2" title="2020"></i><i class="hcell l3" title="2021"></i><i class="hcell l4" title="2022: peak"></i>
+        <i class="hcell l4" title="2023: peak"></i><i class="hcell l3" title="2024"></i><i class="hcell l2" title="2025"></i><i class="hcell l2" title="2026"></i>
+
+        <span class="rowlab">Context loss</span>
+        <i class="hcell l0" title="2019: none"></i><i class="hcell l0" title="2020"></i><i class="hcell l1" title="2021"></i><i class="hcell l1" title="2022"></i>
+        <i class="hcell l2" title="2023"></i><i class="hcell l3" title="2024"></i><i class="hcell l4" title="2025"></i><i class="hcell l4" title="2026: peak"></i>
+
+        <span class="rowlab">Tool misuse</span>
+        <i class="hcell l0" title="2019"></i><i class="hcell l1" title="2020"></i><i class="hcell l1" title="2021"></i><i class="hcell l2" title="2022"></i>
+        <i class="hcell l3" title="2023"></i><i class="hcell l3" title="2024"></i><i class="hcell l3" title="2025"></i><i class="hcell l2" title="2026"></i>
+
+        <span class="rowlab">Coordination</span>
+        <i class="hcell l0" title="2019"></i><i class="hcell l0" title="2020"></i><i class="hcell l0" title="2021"></i><i class="hcell l1" title="2022"></i>
+        <i class="hcell l1" title="2023"></i><i class="hcell l2" title="2024"></i><i class="hcell l3" title="2025"></i><i class="hcell l4" title="2026: peak"></i>
+
+        <span class="rowlab">Oversight fatigue</span>
+        <i class="hcell l0" title="2019"></i><i class="hcell l0" title="2020"></i><i class="hcell l1" title="2021"></i><i class="hcell l1" title="2022"></i>
+        <i class="hcell l2" title="2023"></i><i class="hcell l2" title="2024"></i><i class="hcell l3" title="2025"></i><i class="hcell l3" title="2026"></i>
+      </div>
+      <p class="heat-note">The field's attention is migrating down this chart: from what models say (hallucination, peaked 2022–23) to what systems do (context loss and coordination, both peaking now). The failure modes didn't change — the deployed surface area did.</p>
+    </section>
+
+    <section id="method">
+      <div class="sec-head">
+        <h2>Method</h2>
+        <span class="pattern-tag">pattern: method-note</span>
+      </div>
+      <div class="k-callout info">
+        <strong class="k-callout-title">How this was synthesized</strong>
+        52 sources (2019–2026) coded against 4 claims by two independent passes; disagreements
+        resolved by a third read. Confidence reflects source count, diversity, and replication —
+        not vote share. "Contested" means credible sources disagree after coding, not that
+        evidence is thin. Full source table and coding rubric in the appendix file.
+      </div>
+    </section>
+
+  </main>
+</div>
+
+<script>
+  const toggle = document.getElementById('theme-toggle');
+  toggle.addEventListener('click', () => {
+    const root = document.documentElement;
+    const dark = matchMedia('(prefers-color-scheme: dark)').matches;
+    const current = root.dataset.theme || (dark ? 'dark' : 'light');
+    root.dataset.theme = current === 'dark' ? 'light' : 'dark';
+  });
+</script>
+</body>
+</html>

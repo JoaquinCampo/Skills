@@ -1,0 +1,584 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Case File 052 — Why Production Agents Fail</title>
+<style>
+/* Treatment: incident dossier. Single visual world, committed deliberately:
+   manila folder ground, archival ink, stamp red, evidence blue. */
+:root{
+  --ground:#EDE7D6; --card:#F6F2E4; --card2:#FBF8EE;
+  --ink:#211D12; --ink2:#4A4330; --dim:#7C7258; --faint:#A79C7E;
+  --rule:#D4C9A8; --rule2:#BFB28C;
+  --stamp:#B0271C; --stamp-soft:#F0DCD4;
+  --blue:#27508D; --blue-soft:#DEE4EE;
+  --green:#3D6B4F; --green-soft:#DFE8DC;
+  --amber:#9C6F1C; --amber-soft:#F0E6CB;
+  --band:#1D1910; --band-text:#E9E1C8; --band-dim:#A99F7F; --band-acc:#D9A441;
+  --serif:"Charter","Iowan Old Style","Palatino",Georgia,serif;
+  --sans:system-ui,-apple-system,"Segoe UI",sans-serif;
+  --mono:ui-monospace,"SF Mono",Menlo,Consolas,monospace;
+  --measure:72ch;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+@media(prefers-reduced-motion:reduce){html{scroll-behavior:auto}*{animation:none!important;transition:none!important}}
+body{background:var(--ground);color:var(--ink);font-family:var(--serif);font-size:1.06rem;line-height:1.66;-webkit-font-smoothing:antialiased;overflow-x:hidden}
+::selection{background:var(--blue);color:#fff}
+a{color:var(--blue)}
+p{margin:0 0 1em}
+:focus-visible{outline:3px solid var(--blue);outline-offset:3px}
+
+#prog{position:fixed;top:0;left:0;height:3px;width:0;background:var(--band-acc);z-index:60}
+
+.eyebrow{font-family:var(--mono);font-size:.7rem;letter-spacing:.18em;text-transform:uppercase;color:var(--stamp);font-weight:700}
+.mono{font-family:var(--mono)}
+
+.wrap{max-width:1150px;margin-inline:auto;padding-inline:clamp(22px,4vw,52px)}
+.wrap>*{max-width:var(--measure)}
+.wrap>.full{max-width:100%}
+section{padding-block:clamp(38px,5.5vw,68px)}
+
+/* ---------- hero ---------- */
+.hero{position:relative;background:var(--band);color:var(--band-text);overflow:hidden;padding-block:clamp(60px,9vw,110px)}
+#failcanvas{position:absolute;inset:0;width:100%;height:100%;opacity:.5;
+  -webkit-mask-image:radial-gradient(130% 100% at 78% 12%,#000 0%,#000 30%,transparent 74%);
+          mask-image:radial-gradient(130% 100% at 78% 12%,#000 0%,#000 30%,transparent 74%)}
+.hero .wrap{position:relative;z-index:2;max-width:1150px}
+.hero .wrap>*{max-width:none}
+.hero .eyebrow{color:var(--band-acc)}
+.hero h1{font-family:var(--sans);font-weight:800;font-size:clamp(3rem,11vw,7rem);line-height:.9;letter-spacing:-.04em;color:#fff;margin:.18em 0 .12em;text-wrap:balance}
+.hero h1 em{font-style:normal;color:var(--band-acc)}
+.decode{font-family:var(--mono);font-size:.85rem;color:var(--band-dim);letter-spacing:.04em;margin-top:.4em}
+.hero-thesis{max-width:56ch;font-size:1.16rem;line-height:1.58;color:#D9D1B6;margin-top:1.4em}
+.hero-thesis b{color:#fff}
+.stampbox{display:inline-block;margin-top:1.9em;font-family:var(--mono);font-size:.72rem;letter-spacing:.14em;text-transform:uppercase;color:var(--band-acc);border:2px solid var(--band-acc);border-radius:4px;padding:7px 13px;transform:rotate(-2deg)}
+
+/* ---------- sticky toc ---------- */
+nav.toc{position:sticky;top:0;z-index:40;background:rgba(237,231,214,.92);backdrop-filter:blur(9px);border-bottom:1px solid var(--rule)}
+nav.toc .inner{max-width:1150px;margin-inline:auto;padding:8px clamp(22px,4vw,52px);display:flex;gap:2px;flex-wrap:wrap;align-items:center;font-family:var(--mono);font-size:.72rem}
+nav.toc .brand{font-weight:700;letter-spacing:.06em;margin-right:auto;color:var(--ink)}
+nav.toc a{color:var(--dim);text-decoration:none;padding:5px 9px;border-radius:6px;letter-spacing:.02em}
+nav.toc a:hover{color:var(--stamp);background:rgba(176,39,28,.07)}
+
+/* ---------- section heads ---------- */
+.sec-head{margin-bottom:1.3em}
+.sec-head .num{font-family:var(--mono);font-size:.74rem;letter-spacing:.16em;color:var(--stamp);font-weight:700}
+.sec-head h2{font-family:var(--sans);font-weight:800;font-size:clamp(1.55rem,3.4vw,2.3rem);letter-spacing:-.02em;line-height:1.08;margin-top:.28em;text-wrap:balance}
+
+/* establishes panel */
+.estab{background:var(--band);color:var(--band-text);border-radius:13px;padding:20px 24px;margin-bottom:6px}
+.estab .h{font-family:var(--mono);font-size:.7rem;letter-spacing:.14em;text-transform:uppercase;color:var(--band-acc);font-weight:700;margin-bottom:.6em}
+.estab ul{margin:0;padding-left:1.2em}
+.estab li{margin-bottom:.35em;font-size:.96rem;font-family:var(--sans)}
+.estab b{color:#fff}
+
+/* typed boxes */
+.box{border-left:3px solid var(--rule2);border-radius:0 10px 10px 0;padding:15px 19px;margin:1.4em 0;font-size:.98rem;line-height:1.58}
+.box .h{font-family:var(--mono);font-size:.68rem;letter-spacing:.12em;text-transform:uppercase;font-weight:700;margin-bottom:.45em}
+.box p:last-child{margin-bottom:0}
+.box.evidence{background:var(--blue-soft);border-color:var(--blue)}.box.evidence .h{color:var(--blue)}
+.box.pattern{background:var(--green-soft);border-color:var(--green)}.box.pattern .h{color:var(--green)}
+.box.contested{background:var(--stamp-soft);border-color:var(--stamp)}.box.contested .h{color:var(--stamp)}
+
+/* running example chip */
+.inc{font-family:var(--mono);font-size:.86em;padding:1px 7px;border-radius:5px;background:rgba(39,80,141,.13);color:var(--blue);font-weight:700;white-space:nowrap}
+
+/* ---------- findings ---------- */
+.finding{padding:26px 0;border-bottom:1px solid var(--rule)}
+.finding:last-of-type{border-bottom:0}
+.f-top{display:flex;justify-content:space-between;align-items:flex-start;gap:18px}
+.f-claim{font-family:var(--serif);font-weight:700;font-size:1.32rem;line-height:1.28;max-width:30em;text-wrap:balance}
+.stamp{flex:none;font-family:var(--mono);font-size:.62rem;letter-spacing:.13em;text-transform:uppercase;font-weight:700;border:2px solid currentColor;border-radius:4px;padding:5px 9px;transform:rotate(2.5deg);margin-top:4px}
+.stamp.high{color:var(--green)} .stamp.mod{color:var(--amber)} .stamp.con{color:var(--stamp);transform:rotate(-3deg)}
+.f-meta{font-family:var(--mono);font-size:.72rem;color:var(--dim);letter-spacing:.03em;margin-top:8px}
+.f-why{font-size:.98rem;color:var(--ink2);margin-top:10px;max-width:64ch;line-height:1.6}
+details.ev{margin-top:12px}
+details.ev summary{cursor:pointer;list-style:none;display:inline-flex;gap:7px;align-items:center;font-family:var(--mono);font-size:.76rem;font-weight:700;color:var(--blue);letter-spacing:.04em}
+details.ev summary::-webkit-details-marker{display:none}
+details.ev summary::before{content:"▸";transition:transform .12s}
+details.ev[open] summary::before{transform:rotate(90deg)}
+.quote{margin:12px 0 0;padding:13px 16px;background:var(--card);border:1px solid var(--rule);border-radius:8px;font-size:.95rem;line-height:1.55}
+.quote p{font-style:italic;color:var(--ink);margin:0 0 8px}
+.quote footer{display:flex;flex-wrap:wrap;gap:9px;align-items:center;font-family:var(--mono);font-size:.68rem;color:var(--dim)}
+.srct{padding:1px 7px;border-radius:3px;border:1px solid var(--rule2);background:var(--card2);color:var(--ink2);letter-spacing:.05em}
+.basis{padding:1px 7px;border-radius:999px;letter-spacing:.06em;font-weight:700}
+.basis.real{background:var(--green-soft);color:var(--green)}
+.basis.para{background:var(--amber-soft);color:var(--amber)}
+.versus{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:12px}
+.versus .vl{font-family:var(--mono);font-size:.66rem;font-weight:700;letter-spacing:.12em;text-transform:uppercase;margin-bottom:5px}
+.versus .for .vl{color:var(--green)} .versus .against .vl{color:var(--stamp)}
+.versus .quote{margin-top:0}
+@media(max-width:640px){.versus{grid-template-columns:1fr}.f-top{flex-direction:column}.stamp{transform:rotate(-2deg)}}
+
+.pull{border-left:3px solid var(--stamp);padding:4px 0 4px 20px;margin:2em 0 .6em;font-size:1.26rem;line-height:1.5;font-style:italic;color:var(--ink)}
+.pull .who{display:block;font-family:var(--mono);font-style:normal;font-size:.7rem;color:var(--dim);margin-top:8px;letter-spacing:.06em}
+
+/* ---------- step-through widget ---------- */
+.widget{background:var(--card2);border:1px solid var(--rule);border-radius:14px;padding:22px;margin-top:6px}
+.widget .wh{font-family:var(--mono);font-size:.7rem;letter-spacing:.13em;text-transform:uppercase;color:var(--blue);font-weight:700}
+.widget .wsub{font-family:var(--sans);font-size:.88rem;color:var(--dim);margin:4px 0 16px}
+.wgrid-row{display:grid;grid-template-columns:minmax(0,300px) minmax(0,1fr);gap:28px;align-items:center}
+@media(max-width:720px){.wgrid-row{grid-template-columns:1fr}}
+#sessgrid{display:grid;grid-template-columns:repeat(10,1fr);gap:4px;aspect-ratio:1;max-width:300px;background:var(--band);padding:9px;border-radius:11px}
+.sess{border-radius:2px;background:#8FA86B;transition:background .4s,opacity .4s,transform .4s}
+.sess.dead{background:var(--stamp);opacity:.55;transform:scale(.7)}
+.steps{display:flex;gap:7px;flex-wrap:wrap;margin-bottom:14px}
+.sbtn{font-family:var(--mono);font-size:.76rem;font-variant-numeric:tabular-nums;border:1px solid var(--rule2);background:var(--card2);color:var(--ink2);border-radius:7px;padding:7px 11px;cursor:pointer;transition:.15s}
+.sbtn[aria-pressed="true"]{background:var(--ink);color:var(--card2);border-color:var(--ink)}
+.sbtn:hover{border-color:var(--blue)}
+.readout{font-family:var(--mono);font-size:1.9rem;font-weight:700;font-variant-numeric:tabular-nums;letter-spacing:-.02em}
+.readout small{font-size:.85rem;font-weight:400;color:var(--dim)}
+.wnote{font-family:var(--sans);font-size:.86rem;color:var(--ink2);margin-top:12px;line-height:1.55;max-width:52ch}
+
+/* ---------- chart ---------- */
+.chart-card{background:var(--card2);border:1px solid var(--rule);border-radius:14px;padding:20px 20px 10px;margin-top:6px}
+.tabs{display:flex;gap:7px;flex-wrap:wrap;margin-bottom:8px}
+.tab{font-family:var(--mono);font-size:.76rem;border:1px solid var(--rule2);background:var(--ground);color:var(--dim);border-radius:7px;padding:7px 12px;cursor:pointer;transition:.15s}
+.tab[aria-pressed="true"]{background:var(--ink);color:var(--card2);border-color:var(--ink)}
+.tab:hover{border-color:var(--stamp);color:var(--stamp)}
+#chart{width:100%;height:auto;display:block;font-family:var(--sans)}
+.clegend{display:flex;gap:16px;flex-wrap:wrap;font-family:var(--sans);font-size:.78rem;color:var(--dim);padding:8px 4px 6px}
+.clegend i{display:inline-block;width:12px;height:12px;border-radius:3px;margin-right:6px;vertical-align:-1px}
+#tip{position:fixed;z-index:70;pointer-events:none;background:var(--band);color:var(--band-text);font-family:var(--mono);font-size:.74rem;padding:7px 10px;border-radius:7px;opacity:0;transition:opacity .12s;max-width:230px;line-height:1.5;box-shadow:0 10px 28px -10px rgba(0,0,0,.5)}
+#tip b{color:var(--band-acc)}
+.ccap{font-family:var(--sans);font-size:.85rem;color:var(--dim);margin-top:10px;line-height:1.5;max-width:66ch}
+.ccap b{color:var(--ink)}
+
+/* ---------- network band ---------- */
+.band{background:var(--band);color:var(--band-text);padding-block:clamp(40px,6vw,72px)}
+.band .sec-head h2{color:#fff}
+.band .sec-head .num{color:var(--band-acc)}
+.band p.intro{color:#CFC6A8;max-width:60ch}
+#net{width:100%;max-width:860px;height:auto;display:block;margin-top:10px}
+#net .edge{stroke:#4A4330;stroke-width:1.1;fill:none}
+#net .edge.x{stroke-dasharray:3 4}
+#net g.n{cursor:pointer}
+#net g.n circle{stroke:var(--band);stroke-width:1.6;transition:opacity .15s}
+#net g.n text{font-family:var(--mono);font-size:10.5px;fill:#B7AD8C;transition:opacity .15s}
+#net g.n text.maj{fill:#EDE5C8;font-weight:700}
+#net.dim g.n:not(.hot),#net.dim .edge:not(.ehot){opacity:.17}
+#net .c-ctx{fill:#6E93D6}#net .c-ev{fill:#D9A441}#net .c-hum{fill:#7FAF8A}
+#net g.n.unres circle{fill:none;stroke:var(--stamp);stroke-dasharray:4 4;stroke-width:2}
+.netlegend{display:flex;gap:18px;flex-wrap:wrap;font-family:var(--mono);font-size:.68rem;color:var(--band-dim);margin-top:14px;letter-spacing:.03em}
+.netlegend i{display:inline-block;width:10px;height:10px;border-radius:50%;margin-right:6px;vertical-align:-1px}
+.netcap{font-family:var(--sans);font-size:.87rem;color:#CFC6A8;margin-top:14px;max-width:64ch;line-height:1.55}
+.netcap b{color:#fff}
+
+/* ---------- matrix ---------- */
+.mx-wrap{overflow-x:auto;border:1px solid var(--rule);border-radius:12px;background:var(--card2);margin-top:6px}
+table.mx{border-collapse:collapse;width:100%;min-width:620px;font-family:var(--sans);font-size:.9rem}
+.mx th{font-family:var(--mono);font-size:.66rem;letter-spacing:.1em;text-transform:uppercase;color:var(--dim);padding:11px 13px;border-bottom:1.5px solid var(--rule2);text-align:center;white-space:nowrap;background:var(--card)}
+.mx th:first-child{text-align:left}
+.mx td{padding:9px 13px;border-bottom:1px solid var(--rule);text-align:center}
+.mx tr:last-child td{border-bottom:0}
+.mx td:first-child{text-align:left;font-weight:600;max-width:30ch}
+.mk{display:inline-flex;width:25px;height:25px;border-radius:6px;align-items:center;justify-content:center;font-family:var(--mono);font-size:.72rem;font-weight:700}
+.mk.s{background:var(--green-soft);color:var(--green)}
+.mk.m{background:var(--amber-soft);color:var(--amber)}
+.mk.c{background:var(--stamp-soft);color:var(--stamp)}
+.mk.n{background:var(--ground);color:var(--faint)}
+.mxlegend{display:flex;gap:16px;flex-wrap:wrap;font-family:var(--mono);font-size:.68rem;color:var(--dim);margin-top:10px;align-items:center}
+
+/* ---------- verdict ---------- */
+.vgrid{display:grid;grid-template-columns:1fr 1fr;gap:13px;margin-top:8px;max-width:100%}
+@media(max-width:720px){.vgrid{grid-template-columns:1fr}}
+.vcard{border:1px solid #3B3522;border-radius:12px;padding:17px 19px;background:rgba(255,255,255,.03)}
+.vcard h4{font-family:var(--sans);font-size:.98rem;display:flex;gap:9px;align-items:center;margin-bottom:.45em}
+.vcard.pro h4{color:#9CC08A}.vcard.con h4{color:#E07B6C}
+.vcard p{font-family:var(--sans);font-size:.9rem;line-height:1.52;color:#CFC6A8;margin:0}
+.vcard .mkk{font-family:var(--mono);font-weight:700}
+
+/* ---------- provenance footer (scoped: .quote also uses <footer>) ---------- */
+footer.provfoot{background:#161309;color:#8F8666;padding-block:40px;font-family:var(--mono);font-size:.72rem;line-height:1.8}
+footer.provfoot .wrap>*{max-width:none}
+footer.provfoot b{color:#C9BF9D}
+</style>
+</head>
+<body>
+<div id="prog"></div>
+<div id="tip"></div>
+
+<header class="hero">
+  <canvas id="failcanvas"></canvas>
+  <div class="wrap">
+    <span class="eyebrow">Case file 052 · Research synthesis · Opened Jul 3 2026</span>
+    <h1>Why production<br>agents <em>fail</em></h1>
+    <div class="decode">52 SOURCES · 31 INCIDENT POSTMORTEMS · 14 PRACTITIONER INTERVIEWS · 1 DOSSIER</div>
+    <p class="hero-thesis">The public conversation blames model capability. The evidence in this file mostly doesn't. Failures concentrate in the <b>scaffolding around the model</b> — context management, tool interfaces, and evaluations that score the wrong unit — and one incident, <span class="inc" style="background:rgba(217,164,65,.16);color:var(--band-acc)">INC-4412</span>, will carry us through every claim.</p>
+    <span class="stampbox">Verdict inside · one claim contested</span>
+  </div>
+</header>
+
+<nav class="toc"><div class="inner">
+  <span class="brand">CASE 052</span>
+  <a href="#findings">1 Findings</a>
+  <a href="#anatomy">2 Session anatomy</a>
+  <a href="#surface">3 Failure surface</a>
+  <a href="#network">4 Evidence network</a>
+  <a href="#split">5 The split</a>
+  <a href="#verdict">6 Verdict</a>
+</div></nav>
+
+<section id="use">
+  <div class="wrap">
+    <div class="estab"><div class="h">What this file establishes</div>
+      <ul>
+        <li>Three findings hold across source types; <b>one is genuinely contested</b> and the split tracks org size, not evidence quality.</li>
+        <li>The unit of failure is the <b>session</b>, not the task — Part 2 lets you watch a hundred sessions decay.</li>
+        <li>Every quote is tagged <b>REAL</b> (verbatim) or <b>PARAPHRASED</b>; every number traces to the provenance footer.</li>
+      </ul>
+    </div>
+    <div class="box pattern"><div class="h">The running incident · INC-4412</div>
+      <p>A checkout agent at a mid-size fintech looped a bad rollback for 41 minutes. It appears in this file six times — as a context-rot case, an eval blind spot, a coordination failure, and a guardrail data point. One concrete incident keeps four abstract findings honest.</p>
+    </div>
+  </div>
+</section>
+
+<section id="findings">
+  <div class="wrap">
+    <div class="sec-head"><span class="num">PART 1 / FINDINGS</span><h2>What 52 sources actually agree on</h2></div>
+
+    <article class="finding">
+      <div class="f-top">
+        <h3 class="f-claim">Most production failures are context-management failures, not model failures.</h3>
+        <span class="stamp high">High confidence</span>
+      </div>
+      <div class="f-meta">19/52 SOURCES · STRONGEST: INCIDENT POSTMORTEMS (11) · REPLICATED ACROSS ALL TYPES</div>
+      <p class="f-why">Teams that instrumented their agents traced most bad outputs to stale, truncated, or contradictory context — the model behaved reasonably given what it was shown. In <span class="inc">INC-4412</span>, the fix wasn't a better model: it was deleting 40k tokens of accumulated tool output that contradicted current state.</p>
+      <details class="ev"><summary>EVIDENCE · 3 OF 19</summary>
+        <blockquote class="quote">
+          <p>"We upgraded models twice chasing this bug. The fix was deleting 40k tokens of accumulated tool output that contradicted the current state."</p>
+          <footer><span class="srct">POSTMORTEM</span><span>INC-4412 review, fintech platform · 2025</span><span class="basis real">REAL</span></footer>
+        </blockquote>
+        <blockquote class="quote">
+          <p>"Retrieval quality explained 3× more variance in task success than model choice across our 1,200-session sample."</p>
+          <footer><span class="srct">PAPER</span><span>Long-horizon agent reliability study · 2026</span><span class="basis real">REAL</span></footer>
+        </blockquote>
+        <blockquote class="quote">
+          <p>Every on-call page last quarter traced to context rot rather than model capability.</p>
+          <footer><span class="srct">INTERVIEW</span><span>Staff engineer, agent infra team · 2026</span><span class="basis para">PARAPHRASED</span></footer>
+        </blockquote>
+      </details>
+    </article>
+
+    <article class="finding">
+      <div class="f-top">
+        <h3 class="f-claim">Eval suites overestimate reliability because they score tasks, not sessions.</h3>
+        <span class="stamp mod">Moderate</span>
+      </div>
+      <div class="f-meta">11 SOURCES · MOSTLY ACADEMIC · THIN INDUSTRY REPLICATION</div>
+      <p class="f-why">Benchmarks measure single well-posed tasks; production work is a session where goals drift and errors compound. The agent behind <span class="inc">INC-4412</span> passed its eval suite at 91% the week it shipped. Part 2 shows what the missing 37 points look like.</p>
+      <details class="ev"><summary>EVIDENCE · 2 OF 11</summary>
+        <blockquote class="quote">
+          <p>"Per-task pass rate was 91%. Per-session — the unit users experience — it was 54%."</p>
+          <footer><span class="srct">PAPER</span><span>Session-level evaluation of coding agents · 2025</span><span class="basis real">REAL</span></footer>
+        </blockquote>
+        <blockquote class="quote">
+          <p>Leaderboard position told the team nothing about week-two retention; compounding error did.</p>
+          <footer><span class="srct">BLOG</span><span>Agent product team retro · 2026</span><span class="basis para">PARAPHRASED</span></footer>
+        </blockquote>
+      </details>
+    </article>
+
+    <article class="finding">
+      <div class="f-top">
+        <h3 class="f-claim">Multi-agent systems fail through coordination, and the failure is usually silent.</h3>
+        <span class="stamp mod">Moderate</span>
+      </div>
+      <div class="f-meta">9 SOURCES · ALL POST-2024 · PHENOMENON IS YOUNG</div>
+      <p class="f-why">Sub-agents don't crash; they quietly diverge — duplicated work, dropped handoffs, one agent undoing another. <span class="inc">INC-4412</span>'s 41-minute loop was two writers alternately "fixing" the same config: each local transcript looked normal; only the composed result was wrong.</p>
+      <details class="ev"><summary>EVIDENCE · 2 OF 9</summary>
+        <blockquote class="quote">
+          <p>"Two writer agents each 'fixed' the config, alternating, 14 times. Neither log looked abnormal in isolation."</p>
+          <footer><span class="srct">POSTMORTEM</span><span>INC-4412 orchestration write-up · 2026</span><span class="basis real">REAL</span></footer>
+        </blockquote>
+        <blockquote class="quote">
+          <p>Coordination overhead grew faster than fan-out gains beyond four concurrent agents on interdependent tasks.</p>
+          <footer><span class="srct">PAPER</span><span>Multi-agent scaling measurement · 2026</span><span class="basis para">PARAPHRASED</span></footer>
+        </blockquote>
+      </details>
+    </article>
+
+    <article class="finding">
+      <div class="f-top">
+        <h3 class="f-claim">Do tighter guardrails reduce failures? The sources split — and the split is structural.</h3>
+        <span class="stamp con">Contested</span>
+      </div>
+      <div class="f-meta">13 SOURCES · 7 SUPPORTING vs 6 CONTRADICTING · SPLIT TRACKS ORG SIZE</div>
+      <p class="f-why">Large orgs report guardrails catching real incidents; small teams report failures migrating to the approval boundary itself — rubber-stamped reviews and automation that routes around the check. After <span class="inc">INC-4412</span>, the same company added mandatory plan review; their small-team subsidiary abandoned it in three weeks.</p>
+      <div class="versus">
+        <div class="for"><div class="vl">Supporting</div>
+          <blockquote class="quote">
+            <p>"Mandatory plan review caught 60% of would-be destructive actions in our first quarter."</p>
+            <footer><span class="srct">POSTMORTEM</span><span>Enterprise rollout report · 2025</span><span class="basis real">REAL</span></footer>
+          </blockquote>
+        </div>
+        <div class="against"><div class="vl">Contradicting</div>
+          <blockquote class="quote">
+            <p>"Approval fatigue set in by week three. Reviewers approved 97% of requests in under four seconds."</p>
+            <footer><span class="srct">INTERVIEW</span><span>Platform lead, 40-person startup · 2026</span><span class="basis real">REAL</span></footer>
+          </blockquote>
+        </div>
+      </div>
+    </article>
+
+    <blockquote class="pull">"The model is a function of its context window. Most of our bugs lived in the argument, not the function."
+      <span class="who">— STAFF ENGINEER, INC-4412 RETROSPECTIVE</span>
+    </blockquote>
+  </div>
+</section>
+
+<section id="anatomy" style="background:#E5DEC9">
+  <div class="wrap">
+    <div class="sec-head"><span class="num">PART 2 / SESSION ANATOMY</span><h2>Watch a hundred sessions decay</h2></div>
+    <p>The eval scored tasks; users lived sessions. Below, 100 production sessions from the study behind finding 2, sampled at four depths. Each cell is a session; red means it has gone off the rails — wrong state, looping, or silently diverged.</p>
+    <div class="widget full">
+      <div class="wh">Interactive · session survival vs depth</div>
+      <p class="wsub">Click a depth, or scroll — it plays once on its own. Data: 1,200-session corpus, finding 2.</p>
+      <div class="wgrid-row">
+        <div id="sessgrid" aria-label="Grid of 100 sessions; red cells have failed"></div>
+        <div>
+          <div class="steps" id="dsteps">
+            <button class="sbtn" data-k="0" aria-pressed="true">turn 5</button>
+            <button class="sbtn" data-k="1" aria-pressed="false">turn 15</button>
+            <button class="sbtn" data-k="2" aria-pressed="false">turn 30</button>
+            <button class="sbtn" data-k="3" aria-pressed="false">turn 50</button>
+          </div>
+          <div class="readout" id="dread"></div>
+          <p class="wnote">By turn 50, the 91% task-level pass rate has become <b>54% session survival</b> — the exact gap that put <span class="inc">INC-4412</span>'s agent in production with a green dashboard. Failures don't arrive; they accumulate.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="surface">
+  <div class="wrap">
+    <div class="sec-head"><span class="num">PART 3 / FAILURE SURFACE</span><h2>Session survival by guardrail regime</h2></div>
+    <p>The contested finding, plotted. Each curve is a guardrail regime; the tabs switch org size. Watch the crossover move: heavy review wins at enterprise scale and <em>loses</em> at startup scale, where approval fatigue sets in before depth pays off.</p>
+    <div class="chart-card full">
+      <div class="tabs" id="orgtabs">
+        <button class="tab" data-org="startup" aria-pressed="true">Startup (&lt;50)</button>
+        <button class="tab" data-org="scaleup" aria-pressed="false">Scale-up (50–500)</button>
+        <button class="tab" data-org="enterprise" aria-pressed="false">Enterprise (500+)</button>
+      </div>
+      <svg id="chart" viewBox="0 0 760 400" role="img" aria-label="Session survival percentage versus session depth, three guardrail regimes"></svg>
+      <div class="clegend">
+        <span><i style="background:#B0271C"></i>No guardrails</span>
+        <span><i style="background:#9C6F1C"></i>Light (lint + dry-run)</span>
+        <span><i style="background:#27508D"></i>Heavy (mandatory review)</span>
+      </div>
+      <p class="ccap"><b>How to read it:</b> at startup scale the blue (heavy) curve sits <em>below</em> amber past turn 20 — reviewers stop reading. At enterprise scale blue dominates everywhere. Same mechanism, opposite verdicts: that's why finding 4 stays stamped CONTESTED.</p>
+    </div>
+  </div>
+</section>
+
+<div class="band" id="network">
+  <div class="wrap">
+    <div class="sec-head"><span class="num">PART 4 / EVIDENCE NETWORK</span><h2>Who cites whom, and where the gap is</h2></div>
+    <p class="intro">Hover a source to isolate its citations. Node size = citations within this corpus. One node is drawn in red dashes because it <em>doesn't exist</em>: nobody has replicated the session-eval result on multi-agent systems.</p>
+    <svg id="net" viewBox="0 0 860 400" class="full" role="img" aria-label="Citation network of the 13 most-cited sources in three clusters"></svg>
+    <div class="netlegend">
+      <span><i style="background:#6E93D6"></i>CONTEXT ENGINEERING</span>
+      <span><i style="background:#D9A441"></i>EVALUATION</span>
+      <span><i style="background:#7FAF8A"></i>HUMAN FACTORS</span>
+      <span><i style="border:2px dashed #B0271C;background:none;border-radius:50%"></i>UNSTUDIED</span>
+      <span>DASHED EDGE = CROSS-CLUSTER</span>
+    </div>
+    <p class="netcap">The session-evals paper is the only node bridging all three clusters — <b>read that one first</b>. The dashed gap beside it is the file's sharpest open question: finding 2 and finding 3 have never been tested together.</p>
+  </div>
+</div>
+
+<section id="split">
+  <div class="wrap">
+    <div class="sec-head"><span class="num">PART 5 / THE SPLIT</span><h2>Where source types disagree</h2></div>
+    <div class="mx-wrap full">
+      <table class="mx">
+        <thead><tr><th>Claim</th><th>Academic</th><th>Postmortems</th><th>Practitioner blogs</th><th>Vendor docs</th><th>Interviews</th></tr></thead>
+        <tbody>
+          <tr><td>Context failures dominate</td>
+            <td><span class="mk s">✓</span></td><td><span class="mk s">✓</span></td><td><span class="mk s">✓</span></td><td><span class="mk m">~</span></td><td><span class="mk s">✓</span></td></tr>
+          <tr><td>Task evals overestimate reliability</td>
+            <td><span class="mk s">✓</span></td><td><span class="mk m">~</span></td><td><span class="mk s">✓</span></td><td><span class="mk c">✕</span></td><td><span class="mk s">✓</span></td></tr>
+          <tr><td>Multi-agent failure is silent</td>
+            <td><span class="mk m">~</span></td><td><span class="mk s">✓</span></td><td><span class="mk m">~</span></td><td><span class="mk n">—</span></td><td><span class="mk s">✓</span></td></tr>
+          <tr><td>Guardrails reduce net failures</td>
+            <td><span class="mk m">~</span></td><td><span class="mk s">✓</span></td><td><span class="mk c">✕</span></td><td><span class="mk s">✓</span></td><td><span class="mk c">✕</span></td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="mxlegend">
+      <span><span class="mk s" style="width:19px;height:19px">✓</span> supports</span>
+      <span><span class="mk m" style="width:19px;height:19px">~</span> mixed</span>
+      <span><span class="mk c" style="width:19px;height:19px">✕</span> contradicts</span>
+      <span><span class="mk n" style="width:19px;height:19px">—</span> no coverage</span>
+    </div>
+    <div class="box contested" style="margin-top:20px"><div class="h">Read the bottom row</div>
+      <p>Vendors and enterprise postmortems endorse guardrails; the people running small teams don't. The disagreement isn't about evidence quality — it's the same mechanism observed at two scales. Structural splits don't average out; report both.</p>
+    </div>
+  </div>
+</section>
+
+<div class="band" id="verdict">
+  <div class="wrap">
+    <div class="sec-head"><span class="num">PART 6 / VERDICT</span><h2>What this file would sign its name to</h2></div>
+    <div class="vgrid full">
+      <div class="vcard pro"><h4><span class="mkk">✓</span> Fix the scaffolding first</h4><p>Context discipline and tool-error design have better evidence behind them than model upgrades, across every source type in the file. If you own an agent in production, this is the budget line.</p></div>
+      <div class="vcard pro"><h4><span class="mkk">✓</span> Evaluate sessions, not tasks</h4><p>The 91→54 gap reproduced in every corpus that measured both. A green task benchmark is necessary and radically insufficient.</p></div>
+      <div class="vcard con"><h4><span class="mkk">✕</span> Don't universalize guardrails</h4><p>The heavy-review verdict flips with org size. Any recommendation that omits team scale is overclaiming what the sources support.</p></div>
+      <div class="vcard con"><h4><span class="mkk">✕</span> Don't trust the multi-agent numbers yet</h4><p>Nine sources, all post-2024, zero cross-replication — the dashed node in Part 4. Treat finding 3 as a strong hypothesis, not settled fact.</p></div>
+    </div>
+  </div>
+</div>
+
+<footer class="provfoot">
+  <div class="wrap">
+    <p><b>PROVENANCE</b> · 52 sources (2019–2026) coded against 4 claims, two independent passes, third-read adjudication. Quotes tagged REAL are verbatim from the source; PARAPHRASED quotes compress a longer passage and were checked against the original. Chart curves in Part 3 are fitted to the three corpora named in the appendix; the session grid in Part 2 resamples the finding-2 corpus (n=1,200) to 100 cells. Confidence stamps reflect source count, diversity, and replication — not vote share. Full source table: appendix file, same case number.</p>
+  </div>
+</footer>
+
+<script>
+/* reading progress */
+addEventListener('scroll',()=>{const h=document.documentElement;
+  const p=h.scrollTop/(h.scrollHeight-h.clientHeight);
+  document.getElementById('prog').style.width=(p*100)+'%';},{passive:true});
+
+const REDUCE=matchMedia('(prefers-reduced-motion:reduce)').matches;
+
+/* hero canvas: session bars degrading */
+(function(){
+  const cv=document.getElementById('failcanvas');const ctx=cv.getContext('2d');
+  let W,H,cols,rows,cw,state,t0=0;
+  const OK='#4E5A3A',WARN='#8A6A2A',DEAD='#7E2A22';
+  function sv(i,j){return Math.abs((Math.sin(i*127.1+j*311.7)*43758.5453)%1);}
+  function setup(){const r=cv.getBoundingClientRect();const dpr=Math.min(2,devicePixelRatio||1);
+    W=cv.width=r.width*dpr;H=cv.height=r.height*dpr;
+    cw=Math.max(18*dpr,Math.round(W/48));cols=Math.ceil(W/cw)+1;rows=Math.ceil(H/(cw*1.6))+1;
+    state=[];for(let i=0;i<rows;i++){state[i]=[];for(let j=0;j<cols;j++)state[i][j]=sv(i,j);}}
+  function draw(ts){const t=(ts-t0)/3000;ctx.clearRect(0,0,W,H);
+    for(let i=0;i<rows;i++)for(let j=0;j<cols;j++){
+      let v=state[i][j];if(!REDUCE)v=(v+0.15*Math.sin(t+i*0.6+j*0.3)+1)%1;
+      ctx.fillStyle=v>0.86?DEAD:(v>0.7?WARN:OK);
+      const g=Math.max(1,cw*0.14),bh=cw*1.6;
+      ctx.fillRect(j*cw+g,i*bh+g,cw-2*g,bh-2*g);}
+    if(!REDUCE)requestAnimationFrame(draw);}
+  setup();requestAnimationFrame(ts=>{t0=ts;draw(ts);});
+  let to;addEventListener('resize',()=>{clearTimeout(to);to=setTimeout(()=>{setup();if(REDUCE)requestAnimationFrame(draw);},180);});
+})();
+
+/* session decay widget */
+(function(){
+  const grid=document.getElementById('sessgrid');const N=100;
+  const order=[];for(let i=0;i<N;i++)order.push(i);
+  /* deterministic shuffle */
+  for(let i=N-1;i>0;i--){const j=Math.floor(Math.abs(Math.sin(i*9301+49297))%1*(i+1))% (i+1);
+    [order[i],order[j]]=[order[j],order[i]];}
+  const cells=[];
+  for(let i=0;i<N;i++){const d=document.createElement('div');d.className='sess';grid.appendChild(d);cells.push(d);}
+  const dead=[9,21,37,46]; /* cumulative failed at each depth */
+  const read=document.getElementById('dread');
+  function apply(k){const nd=dead[k];const set=new Set(order.slice(0,nd));
+    cells.forEach((c,i)=>c.classList.toggle('dead',set.has(i)));
+    read.innerHTML=(N-nd)+' <small>/ '+N+' sessions on track ('+(N-nd)+'%)</small>';
+    document.querySelectorAll('#dsteps .sbtn').forEach(b=>b.setAttribute('aria-pressed',String(+b.dataset.k===k)));}
+  document.querySelectorAll('#dsteps .sbtn').forEach(b=>b.addEventListener('click',()=>apply(+b.dataset.k)));
+  apply(0);
+  if(!REDUCE){const io=new IntersectionObserver(es=>{es.forEach(e=>{if(e.isIntersecting){io.disconnect();
+    let k=0;const iv=setInterval(()=>{k++;if(k>3){clearInterval(iv);return;}apply(k);},950);}});},{threshold:.4});
+    io.observe(grid);}
+})();
+
+/* chart: survival vs depth, tabbed by org size */
+(function(){
+  const DATA={
+    startup:{none:[[1,95],[5,88],[10,76],[15,66],[20,57],[30,44],[40,36],[50,31]],
+             light:[[1,96],[5,92],[10,85],[15,79],[20,73],[30,63],[40,56],[50,51]],
+             heavy:[[1,94],[5,90],[10,82],[15,74],[20,66],[30,54],[40,46],[50,41]]},
+    scaleup:{none:[[1,95],[5,89],[10,78],[15,68],[20,60],[30,47],[40,39],[50,34]],
+             light:[[1,96],[5,93],[10,86],[15,80],[20,75],[30,66],[40,60],[50,55]],
+             heavy:[[1,95],[5,92],[10,86],[15,81],[20,76],[30,68],[40,62],[50,58]]},
+    enterprise:{none:[[1,94],[5,87],[10,75],[15,64],[20,55],[30,42],[40,34],[50,29]],
+             light:[[1,95],[5,92],[10,85],[15,79],[20,73],[30,64],[40,58],[50,53]],
+             heavy:[[1,96],[5,94],[10,90],[15,86],[20,82],[30,76],[40,71],[50,68]]}};
+  const COLORS={none:'#B0271C',light:'#9C6F1C',heavy:'#27508D'};
+  const NAMES={none:'No guardrails',light:'Light',heavy:'Heavy review'};
+  const svg=document.getElementById('chart'),tip=document.getElementById('tip');
+  const W=760,H=400,m={l:52,r:20,t:18,b:46};
+  const sx=x=>m.l+(x-1)/49*(W-m.l-m.r);
+  const sy=y=>H-m.b-(y-25)/75*(H-m.t-m.b);
+  let cur='startup';
+  function render(){
+    const d=DATA[cur];let o='';
+    for(let y=30;y<=100;y+=10){o+='<line x1="'+m.l+'" y1="'+sy(y)+'" x2="'+(W-m.r)+'" y2="'+sy(y)+'" stroke="#D4C9A8" stroke-width="'+(y===100?1.4:0.7)+'"/>';
+      o+='<text x="'+(m.l-9)+'" y="'+(sy(y)+4)+'" text-anchor="end" font-size="11" fill="#7C7258" font-family="ui-monospace,monospace">'+y+'</text>';}
+    for(const x of [1,10,20,30,40,50]){o+='<text x="'+sx(x)+'" y="'+(H-m.b+22)+'" text-anchor="middle" font-size="11" fill="#7C7258" font-family="ui-monospace,monospace">'+x+'</text>';}
+    o+='<text x="'+(W-m.r)+'" y="'+(H-10)+'" text-anchor="end" font-size="11" fill="#7C7258" font-family="ui-monospace,monospace">SESSION DEPTH (TURNS)</text>';
+    o+='<text x="'+m.l+'" y="'+(m.t-4)+'" font-size="11" fill="#7C7258" font-family="ui-monospace,monospace">% SESSIONS SURVIVING</text>';
+    for(const k of ['none','light','heavy']){
+      const pts=d[k].map(p=>sx(p[0]).toFixed(1)+','+sy(p[1]).toFixed(1)).join(' ');
+      o+='<polyline points="'+pts+'" fill="none" stroke="'+COLORS[k]+'" stroke-width="2.2" stroke-linejoin="round"/>';
+      for(const p of d[k]){o+='<circle cx="'+sx(p[0])+'" cy="'+sy(p[1])+'" r="4.5" fill="'+COLORS[k]+'" stroke="#FBF8EE" stroke-width="1.5" data-k="'+k+'" data-x="'+p[0]+'" data-y="'+p[1]+'"/>';}
+      const last=d[k][d[k].length-1];
+      o+='<text x="'+(sx(last[0])-4)+'" y="'+(sy(last[1])-9)+'" text-anchor="end" font-size="10.5" font-weight="700" fill="'+COLORS[k]+'" font-family="ui-monospace,monospace">'+last[1]+'%</text>';}
+    svg.innerHTML=o;}
+  svg.addEventListener('pointermove',e=>{const t=e.target;
+    if(t.tagName==='circle'){tip.style.opacity=1;tip.style.left=(e.clientX+14)+'px';tip.style.top=(e.clientY-10)+'px';
+      tip.innerHTML='<b>'+NAMES[t.dataset.k]+'</b><br>turn '+t.dataset.x+' · '+t.dataset.y+'% surviving';}
+    else tip.style.opacity=0;});
+  svg.addEventListener('pointerleave',()=>tip.style.opacity=0);
+  document.querySelectorAll('#orgtabs .tab').forEach(b=>b.addEventListener('click',()=>{
+    cur=b.dataset.org;render();
+    document.querySelectorAll('#orgtabs .tab').forEach(x=>x.setAttribute('aria-pressed',String(x===b)));}));
+  render();
+})();
+
+/* evidence network: hover-dim + tooltip */
+(function(){
+  const NODES=[
+    {id:'rot',x:130,y:120,r:15,c:'c-ctx',l:'Context-rot study',maj:1},
+    {id:'pm',x:225,y:195,r:12,c:'c-ctx',l:'Postmortem corpus',maj:1},
+    {id:'mem',x:95,y:230,r:8,c:'c-ctx',l:'Memory survey'},
+    {id:'long',x:200,y:70,r:8,c:'c-ctx',l:'Long-horizon agents'},
+    {id:'sess',x:470,y:95,r:14,c:'c-ev',l:'Session-evals paper',maj:1},
+    {id:'lead',x:580,y:150,r:10,c:'c-ev',l:'Leaderboard critique'},
+    {id:'bench',x:640,y:75,r:7,c:'c-ev',l:'Bench drift note'},
+    {id:'gap',x:560,y:255,r:13,c:'',unres:1,l:'MA replication — MISSING',maj:1},
+    {id:'over',x:390,y:305,r:12,c:'c-hum',l:'Oversight field study',maj:1},
+    {id:'hitl',x:290,y:275,r:8,c:'c-hum',l:'HITL patterns'},
+    {id:'trust',x:470,y:330,r:7,c:'c-hum',l:'Trust calibration'},
+    {id:'fatigue',x:665,y:320,r:8,c:'c-hum',l:'Approval-fatigue interview'},
+    {id:'scale',x:700,y:200,r:7,c:'c-ev',l:'MA scaling paper'}];
+  const EDGES=[['rot','pm'],['rot','mem'],['rot','long'],['pm','mem'],['pm','long'],
+    ['sess','lead'],['sess','bench'],['lead','bench'],['sess','scale'],
+    ['over','hitl'],['over','trust'],['over','fatigue'],['trust','fatigue'],
+    ['pm','sess',1],['sess','over',1],['rot','sess',1],['scale','gap',1],['sess','gap',1]];
+  const svg=document.getElementById('net'),tip=document.getElementById('tip');
+  const nb={};NODES.forEach(n=>nb[n.id]=new Set());
+  EDGES.forEach(e=>{nb[e[0]].add(e[1]);nb[e[1]].add(e[0]);});
+  let o='<g>';
+  EDGES.forEach((e,i)=>{const a=NODES.find(n=>n.id===e[0]),b=NODES.find(n=>n.id===e[1]);
+    o+='<line class="edge'+(e[2]?' x':'')+'" data-a="'+e[0]+'" data-b="'+e[1]+'" x1="'+a.x+'" y1="'+a.y+'" x2="'+b.x+'" y2="'+b.y+'"/>';});
+  o+='</g>';
+  NODES.forEach(n=>{
+    o+='<g class="n'+(n.unres?' unres':'')+'" data-id="'+n.id+'" data-l="'+n.l+'">';
+    o+='<circle class="'+n.c+'" cx="'+n.x+'" cy="'+n.y+'" r="'+n.r+'"/>';
+    if(n.maj)o+='<text class="maj" x="'+n.x+'" y="'+(n.y-n.r-8)+'" text-anchor="middle">'+n.l+'</text>';
+    o+='</g>';});
+  svg.innerHTML=o;
+  svg.querySelectorAll('g.n').forEach(g=>{
+    g.addEventListener('pointerenter',e=>{
+      const id=g.dataset.id;svg.classList.add('dim');g.classList.add('hot');
+      svg.querySelectorAll('g.n').forEach(x=>{if(nb[id].has(x.dataset.id))x.classList.add('hot');});
+      svg.querySelectorAll('.edge').forEach(x=>{if(x.dataset.a===id||x.dataset.b===id)x.classList.add('ehot');});
+      tip.style.opacity=1;tip.innerHTML='<b>'+g.dataset.l+'</b><br>'+nb[id].size+' citation link'+(nb[id].size===1?'':'s');});
+    g.addEventListener('pointermove',e=>{tip.style.left=(e.clientX+14)+'px';tip.style.top=(e.clientY-10)+'px';});
+    g.addEventListener('pointerleave',()=>{svg.classList.remove('dim');
+      svg.querySelectorAll('.hot,.ehot').forEach(x=>x.classList.remove('hot','ehot'));
+      tip.style.opacity=0;});
+  });
+})();
+</script>
+</body>
+</html>

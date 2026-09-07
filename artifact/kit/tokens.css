@@ -1,0 +1,154 @@
+/* Artifact kit — design tokens.
+   Brand-neutral placeholder palette: swap the VALUES for the project's brand,
+   never the NAMES. Components read only these tokens, so a retheme is a
+   one-file change and both themes keep working.
+   Neutrals are hue-biased toward the accent (chosen, not inherited). */
+
+:root {
+  /* grounds */
+  --bg: #f6f7f9;
+  --surface: #ffffff;
+  --surface-sunken: #eef0f4;
+
+  /* ink */
+  --text: #1b2334;
+  --text-2: #4b5568;
+  --text-3: #7c8497;
+
+  /* lines */
+  --border: #e2e5eb;
+  --border-strong: #c6cbd6;
+
+  /* accent — one hue, used sparingly */
+  --accent: #2f5fd0;
+  --accent-ink: #ffffff;   /* text on accent */
+  --accent-soft: #e8edfb;  /* tinted ground */
+
+  /* semantic state — separate from the accent, never used as decoration */
+  --ok: #1e7f46;    --ok-soft: #e3f3e9;
+  --warn: #995c0b;  --warn-soft: #fbf0da;
+  --crit: #b42323;  --crit-soft: #fbe7e7;
+
+  /* categorical — for clusters, network nodes, multi-series marks.
+     Assign by meaning and keep the assignment stable within a page. */
+  --cat-1: #3a68cf;
+  --cat-2: #1f8a7a;
+  --cat-3: #8a4fae;
+  --cat-4: #b07c1f;
+  --cat-5: #c04f6e;
+  --cat-6: #5d6b85;
+
+  /* type — placeholder stacks; for Artifact pages swap to @font-face data URIs
+     (the CSP blocks font CDNs) or keep a deliberate system stack */
+  --font-display: var(--font-body);
+  --font-body: system-ui, -apple-system, "Segoe UI", sans-serif;
+  --font-mono: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+
+  /* fixed type scale — never scale font size with viewport width */
+  --fs-xs: 0.75rem;    /* 12px — labels, captions */
+  --fs-sm: 0.8125rem;  /* 13px — dense UI, tables */
+  --fs-md: 0.9375rem;  /* 15px — UI body */
+  --fs-lg: 1.125rem;   /* 18px — section titles */
+  --fs-xl: 1.375rem;   /* 22px — page titles (dense) */
+  --fs-2xl: 1.75rem;   /* 28px — page titles, stat values */
+
+  /* spacing scale */
+  --sp-1: 4px;  --sp-2: 8px;  --sp-3: 12px;
+  --sp-4: 16px; --sp-5: 24px; --sp-6: 32px; --sp-7: 48px;
+
+  /* shape and depth */
+  --r-sm: 4px;
+  --r-md: 8px;
+  --shadow-1: 0 1px 2px rgb(20 26 40 / 0.06), 0 1px 3px rgb(20 26 40 / 0.08);
+}
+
+/* OS preference. Redefine tokens only — never style components in here. */
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg: #131720;
+    --surface: #1b2029;
+    --surface-sunken: #10141c;
+    --text: #e7eaf1;
+    --text-2: #a9b1c2;
+    --text-3: #6e7688;
+    --border: #2a3040;
+    --border-strong: #3a4154;
+    --accent: #7c97f2;
+    --accent-ink: #101523;
+    --accent-soft: #242f4e;
+    --ok: #53c083;    --ok-soft: #1b3227;
+    --warn: #e0a33a;  --warn-soft: #3a2e17;
+    --crit: #e46a6a;  --crit-soft: #3d1f1f;
+    --cat-1: #7c97f2;
+    --cat-2: #4fc2ae;
+    --cat-3: #b98ade;
+    --cat-4: #d9a84e;
+    --cat-5: #e58aa5;
+    --cat-6: #8b97b0;
+    --shadow-1: 0 1px 2px rgb(0 0 0 / 0.4), 0 1px 3px rgb(0 0 0 / 0.3);
+  }
+}
+
+/* Viewer's explicit toggle stamps data-theme on the root — must win in
+   BOTH directions over the media query. Same values as above. */
+:root[data-theme="dark"] {
+  --bg: #131720;
+  --surface: #1b2029;
+  --surface-sunken: #10141c;
+  --text: #e7eaf1;
+  --text-2: #a9b1c2;
+  --text-3: #6e7688;
+  --border: #2a3040;
+  --border-strong: #3a4154;
+  --accent: #7c97f2;
+  --accent-ink: #101523;
+  --accent-soft: #242f4e;
+  --ok: #53c083;    --ok-soft: #1b3227;
+  --warn: #e0a33a;  --warn-soft: #3a2e17;
+  --crit: #e46a6a;  --crit-soft: #3d1f1f;
+  --cat-1: #7c97f2;
+  --cat-2: #4fc2ae;
+  --cat-3: #b98ade;
+  --cat-4: #d9a84e;
+  --cat-5: #e58aa5;
+  --cat-6: #8b97b0;
+  --shadow-1: 0 1px 2px rgb(0 0 0 / 0.4), 0 1px 3px rgb(0 0 0 / 0.3);
+}
+
+:root[data-theme="light"] {
+  --bg: #f6f7f9;
+  --surface: #ffffff;
+  --surface-sunken: #eef0f4;
+  --text: #1b2334;
+  --text-2: #4b5568;
+  --text-3: #7c8497;
+  --border: #e2e5eb;
+  --border-strong: #c6cbd6;
+  --accent: #2f5fd0;
+  --accent-ink: #ffffff;
+  --accent-soft: #e8edfb;
+  --ok: #1e7f46;    --ok-soft: #e3f3e9;
+  --warn: #995c0b;  --warn-soft: #fbf0da;
+  --crit: #b42323;  --crit-soft: #fbe7e7;
+  --cat-1: #3a68cf;
+  --cat-2: #1f8a7a;
+  --cat-3: #8a4fae;
+  --cat-4: #b07c1f;
+  --cat-5: #c04f6e;
+  --cat-6: #5d6b85;
+  --shadow-1: 0 1px 2px rgb(20 26 40 / 0.06), 0 1px 3px rgb(20 26 40 / 0.08);
+}
+
+/* Minimal base — pair with the host page's reset */
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--font-body);
+  font-size: var(--fs-md);
+  line-height: 1.55;
+}
+
+:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
